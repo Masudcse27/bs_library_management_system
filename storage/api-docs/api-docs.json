@@ -5,6 +5,116 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/book/create": {
+            "post": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Create a new book",
+                "operationId": "createBook",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "category_id",
+                                    "name",
+                                    "author",
+                                    "total_copies",
+                                    "available_copies"
+                                ],
+                                "properties": {
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "The Great Gatsby"
+                                    },
+                                    "author": {
+                                        "type": "string",
+                                        "example": "F. Scott Fitzgerald"
+                                    },
+                                    "short_description": {
+                                        "type": "string",
+                                        "example": "A novel set in the 1920s",
+                                        "nullable": true
+                                    },
+                                    "total_copies": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "available_copies": {
+                                        "type": "integer",
+                                        "example": 8
+                                    },
+                                    "book_cover": {
+                                        "description": "Book cover image (jpg, jpeg, png, gif)",
+                                        "type": "file"
+                                    },
+                                    "pdf_file": {
+                                        "description": "PDF version of the book",
+                                        "type": "file"
+                                    },
+                                    "audio_file": {
+                                        "description": "Audio version of the book (mp3 or wav)",
+                                        "type": "file"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Book created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "book create successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Book"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation errors",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/category/create": {
             "post": {
                 "tags": [
@@ -327,6 +437,87 @@
         }
     },
     "components": {
+        "schemas": {
+            "Book": {
+                "title": "Book Resource",
+                "required": [
+                    "id",
+                    "category",
+                    "name",
+                    "author",
+                    "total_copies",
+                    "available_copies"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "category": {
+                        "description": "Either category ID or full category object if loaded",
+                        "oneOf": [
+                            {
+                                "type": "integer",
+                                "example": 2
+                            },
+                            {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Fiction"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "The Great Gatsby"
+                    },
+                    "author": {
+                        "type": "string",
+                        "example": "F. Scott Fitzgerald"
+                    },
+                    "short_description": {
+                        "type": "string",
+                        "example": "A classic novel set in the 1920s",
+                        "nullable": true
+                    },
+                    "total_copies": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "available_copies": {
+                        "type": "integer",
+                        "example": 7
+                    },
+                    "book_cover_url": {
+                        "type": "string",
+                        "format": "url",
+                        "example": "http://localhost/storage/book_covers/cover.jpg",
+                        "nullable": true
+                    },
+                    "pdf_file_url": {
+                        "type": "string",
+                        "format": "url",
+                        "example": "http://localhost/storage/pdf_files/book.pdf",
+                        "nullable": true
+                    },
+                    "audio_file_url": {
+                        "type": "string",
+                        "format": "url",
+                        "example": "http://localhost/storage/audio_files/book.mp3",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            }
+        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
@@ -336,6 +527,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Books",
+            "description": "Books"
+        },
         {
             "name": "Categories",
             "description": "Categories"
