@@ -115,6 +115,460 @@
                 ]
             }
         },
+        "/api/book/list": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Get list of books with optional filters and pagination",
+                "operationId": "2987ac6eb5f5f261b85a9b3735c1bb66",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filter by book name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "author",
+                        "in": "query",
+                        "description": "Filter by author name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Filter by category name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of results per page (pagination)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Book"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/book/retrieve/{id}": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Retrieve a single book by ID",
+                "operationId": "ea9e352ba3d45f07cb10e4a2f1823aac",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the book to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful retrieval of book details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Book"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book with this id is not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/book/edit/{id}": {
+            "post": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Update an existing book",
+                "description": "Update book information including files (cover, PDF, audio). Use POST with _method=PUT for file uploads.",
+                "operationId": "ac9ae3a1cf4f2ddfa0f7bebd2f1798de",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the book to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "_method",
+                                    "category_id",
+                                    "name",
+                                    "author",
+                                    "total_copies",
+                                    "available_copies"
+                                ],
+                                "properties": {
+                                    "_method": {
+                                        "description": "HTTP method override to support PUT with multipart/form-data",
+                                        "type": "string",
+                                        "example": "PUT"
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Advanced Laravel"
+                                    },
+                                    "author": {
+                                        "type": "string",
+                                        "example": "Masud Bhuiyan"
+                                    },
+                                    "short_description": {
+                                        "type": "string",
+                                        "example": "A deep dive into Laravel."
+                                    },
+                                    "total_copies": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "available_copies": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "book_cover": {
+                                        "description": "Optional book cover image",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "pdf_file": {
+                                        "description": "Optional PDF version of the book",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "audio_file": {
+                                        "description": "Optional audio version of the book",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Book updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book updated successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error or book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/book/delete/{id}": {
+            "delete": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Delete a book by ID",
+                "operationId": "74fad88b506f38ed9df7464dc7932222",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Book ID to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Book deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Book not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/book/popular-books": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Get top 20 popular books",
+                "description": "Returns the 20 most borrowed books with their category details",
+                "operationId": "d3b348368c84b82f562157e9486b03a7",
+                "responses": {
+                    "200": {
+                        "description": "List of popular books",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Top 20 popular books"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Book"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/book/new-collection": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Get latest 20 books",
+                "description": "Returns the 20 most recently added books with category details",
+                "operationId": "ed43e0dc3e21613a503fbe1fb9899af9",
+                "responses": {
+                    "200": {
+                        "description": "List of latest books",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Latest 20 books"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Book"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/book/{id}/is_available": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Check if a book is available",
+                "description": "Returns whether the book with the given ID has available copies",
+                "operationId": "7aeeb35a4ec0a7abab8bc53dbb594244",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the book to check availability",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Availability status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "is_available": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book is not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/category/create": {
             "post": {
                 "tags": [
@@ -434,6 +888,277 @@
                     }
                 ]
             }
+        },
+        "/api/settings/get-settings": {
+            "get": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Get system settings",
+                "operationId": "d3902d89ed80d225a67be41356f9dc51",
+                "responses": {
+                    "200": {
+                        "description": "Settings retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Settings"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/settings/borrow-day-limit": {
+            "patch": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update borrow day limit",
+                "operationId": "879b5073ff2bc7f55e498acbaf049ff1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "max_borrow_duration"
+                                ],
+                                "properties": {
+                                    "max_borrow_duration": {
+                                        "type": "integer",
+                                        "example": 30
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Borrow duration updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Settings"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/settings/borrow-extend-limit": {
+            "patch": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update borrow extension limit",
+                "operationId": "75337c3bde591521563ca3a40e06b458",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "max_extension_limit"
+                                ],
+                                "properties": {
+                                    "max_extension_limit": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Borrow extension count updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Settings"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/settings/borrow-limit": {
+            "patch": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update max borrow limit",
+                "operationId": "1e3d3fa91263e340a40dab36370fa620",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "max_borrow_limit"
+                                ],
+                                "properties": {
+                                    "max_borrow_limit": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Borrow limit updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Settings"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/settings/booking-duration": {
+            "patch": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update max booking duration",
+                "operationId": "dbda560f7419cc7c1949e882d33dfe4a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "max_booking_duration"
+                                ],
+                                "properties": {
+                                    "max_booking_duration": {
+                                        "type": "integer",
+                                        "example": 7
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Booking duration updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Settings"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/settings/booking-days-limit": {
+            "patch": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update max booking limit",
+                "operationId": "d18f6c3b2acad1855a92b146cd2a4c18",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "max_booking_limit"
+                                ],
+                                "properties": {
+                                    "max_booking_limit": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Booking limit updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Settings"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -516,6 +1241,39 @@
                     }
                 },
                 "type": "object"
+            },
+            "Settings": {
+                "title": "Settings",
+                "required": [
+                    "max_borrow_duration",
+                    "max_borrow_limit",
+                    "max_extension_limit",
+                    "max_booking_duration",
+                    "max_booking_limit"
+                ],
+                "properties": {
+                    "max_borrow_duration": {
+                        "type": "integer",
+                        "example": 30
+                    },
+                    "max_borrow_limit": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "max_extension_limit": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "max_booking_duration": {
+                        "type": "integer",
+                        "example": 7
+                    },
+                    "max_booking_limit": {
+                        "type": "integer",
+                        "example": 3
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -534,6 +1292,10 @@
         {
             "name": "Categories",
             "description": "Categories"
+        },
+        {
+            "name": "Settings",
+            "description": "Settings"
         }
     ]
 }

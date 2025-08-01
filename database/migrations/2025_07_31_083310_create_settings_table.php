@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('max_borrow_duration')->default(30); // Maximum borrow duration in days
             $table->integer('max_borrow_limit')->default(3); // Maximum number of books a user can borrow
-            $table->integer('max_extension_count')->default(2); // Maximum number of times a borrow can be extended
+            $table->integer('max_extension_limit')->default(2); // Maximum number of times a borrow can be extended
             $table->integer('max_booking_duration')->default(7); // Maximum booking duration in days
             $table->integer('max_booking_limit')->default(3); // Maximum number of books a user can book
             $table->timestamps();

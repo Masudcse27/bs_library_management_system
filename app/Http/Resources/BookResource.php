@@ -50,7 +50,7 @@ class BookResource extends JsonResource
             'category' => $this->whenLoaded('category', function () {
                 return [
                     'id' => $this->category->id,
-                    'name' => $this->category->name,
+                    'category_name' => $this->category->category_name,
                 ];
             }, $this->category_id),
 
@@ -64,4 +64,6 @@ class BookResource extends JsonResource
             'audio_file_url' => $this->audio_file ? asset('storage/' . $this->audio_file) : null,
         ];
     }
+
+   
 }
