@@ -1,16 +1,18 @@
 <?php
 
+use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::controller(CategoryController::class)->prefix('/category')->group(function () {
-    Route::post('/create', 'create');
-    Route::get('/list', 'list');
-    Route::put('/update/{id}', 'update');
-    Route::delete('/delete/{id}', 'delete');
+Route::get('login',[AuthenticationController::class, 'login']);
+Route::controller(CategoryController::class)->prefix('/category')->middleware('auth:api')->group(function () {
+    Route::post('/create', 'create')->middleware('role:admin');
+    Route::get('/list', 'list')->middleware('role:admin');
+    Route::put('/update/{id}', 'update')->middleware('role:admin');
+    Route::delete('/delete/{id}', 'delete')->middleware('role:admin');
 });
 
 Route::controller(BookController::class)->prefix('/book')->group(function(){
