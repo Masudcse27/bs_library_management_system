@@ -3,11 +3,14 @@
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DonationRequestController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('login',[AuthenticationController::class, 'login']);
+
 Route::controller(CategoryController::class)->prefix('/category')->middleware('auth:api')->group(function () {
     Route::post('/create', 'create')->middleware('role:admin');
     Route::get('/list', 'list')->middleware('role:admin');
@@ -34,3 +37,13 @@ Route::controller(SettingsController::class)->prefix('settings')->group(function
     Route::patch('/booking-duration','booking_duration');
     Route::patch('/booking-days-limit','booking_days_limit');
 });
+
+Route::controller(DonationRequestController::class)->prefix('/donation')->middleware('auth:api')->group(function(){
+    Route::post('/create','create');
+    Route::get('/list','list');
+    Route::get('/retrieve/{id}','retrieve');
+    Route::put('/edit/{id}','update');
+    Route::delete('/delete/{id}','delete');
+    Route::patch('/approve-reject/{id}','approve_reject');
+});
+

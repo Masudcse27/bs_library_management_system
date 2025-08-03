@@ -889,6 +889,376 @@
                 ]
             }
         },
+        "/api/donation/create": {
+            "post": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "Create a new donation request",
+                "description": "Creates a new donation request. Authenticated users only.",
+                "operationId": "createDonationRequest",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "book_title",
+                                    "number_of_copies",
+                                    "contact_number"
+                                ],
+                                "properties": {
+                                    "book_title": {
+                                        "type": "string",
+                                        "example": "Clean Code"
+                                    },
+                                    "author_name": {
+                                        "type": "string",
+                                        "example": "Robert C. Martin"
+                                    },
+                                    "number_of_copies": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Chittagong Central Library"
+                                    },
+                                    "contact_number": {
+                                        "type": "string",
+                                        "example": "+8801771234567"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Donation request created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DonationRequest"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/donation/list": {
+            "get": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "List donation requests",
+                "description": "Admins see only pending requests. Other users see their own donation requests.",
+                "operationId": "listDonationRequests",
+                "responses": {
+                    "200": {
+                        "description": "List of donation requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/DonationRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/donation/retrieve/{id}": {
+            "get": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "Retrieve a specific donation request",
+                "description": "Admins can retrieve any donation request. Users can retrieve only their own.",
+                "operationId": "getDonationRequestById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the donation request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donation request details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DonationRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized access"
+                    },
+                    "404": {
+                        "description": "Donation request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/donation/edit/{id}": {
+            "put": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "Update a donation request",
+                "description": "Only the user who created the donation request can update it.",
+                "operationId": "updateDonationRequest",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the donation request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "book_title": {
+                                        "type": "string",
+                                        "example": "Introduction to Algorithms"
+                                    },
+                                    "author_name": {
+                                        "type": "string",
+                                        "example": "Thomas H. Cormen"
+                                    },
+                                    "number_of_copies": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Main Library"
+                                    },
+                                    "contact_number": {
+                                        "type": "string",
+                                        "example": "0123456789"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Donation request updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DonationRequest"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized access"
+                    },
+                    "404": {
+                        "description": "Donation request not found"
+                    },
+                    "422": {
+                        "description": "Validation errors"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/donation/delete/{id}": {
+            "delete": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "Delete a donation request",
+                "description": "Only the user who created the donation request can delete it.",
+                "operationId": "deleteDonationRequest",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the donation request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donation request deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Donation request deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized access"
+                    },
+                    "404": {
+                        "description": "Donation request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/donation/approve-reject/{id}": {
+            "patch": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "Approve or reject a donation request",
+                "description": "Only admin users can approve or reject donation requests.",
+                "operationId": "approveRejectDonationRequest",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the donation request",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "action"
+                                ],
+                                "properties": {
+                                    "action": {
+                                        "type": "string",
+                                        "enum": [
+                                            "approve",
+                                            "reject"
+                                        ],
+                                        "example": "approve"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Donation request status updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DonationRequest"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid action"
+                    },
+                    "403": {
+                        "description": "Unauthorized access"
+                    },
+                    "404": {
+                        "description": "Donation request not found"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/settings/get-settings": {
             "get": {
                 "tags": [
@@ -1242,6 +1612,57 @@
                 },
                 "type": "object"
             },
+            "DonationRequest": {
+                "title": "DonationRequest",
+                "required": [
+                    "id",
+                    "user_id",
+                    "book_title",
+                    "status",
+                    "number_of_copies",
+                    "contact_number"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "book_title": {
+                        "type": "string",
+                        "example": "Introduction to Algorithms"
+                    },
+                    "author_name": {
+                        "type": "string",
+                        "example": "Thomas H. Cormen"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "approved",
+                            "rejected"
+                        ],
+                        "example": "pending"
+                    },
+                    "number_of_copies": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Dhaka Library Zone 3"
+                    },
+                    "contact_number": {
+                        "type": "string",
+                        "example": "+8801700000000"
+                    }
+                },
+                "type": "object"
+            },
             "Settings": {
                 "title": "Settings",
                 "required": [
@@ -1292,6 +1713,10 @@
         {
             "name": "Categories",
             "description": "Categories"
+        },
+        {
+            "name": "Donation Requests",
+            "description": "Donation Requests"
         },
         {
             "name": "Settings",
