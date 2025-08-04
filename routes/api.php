@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DonationRequestController;
@@ -62,4 +63,12 @@ Route::controller(BorrowController::class)->prefix('/borrow')->middleware('auth:
     Route::get('/retrieve/{id}','retrieve');
     Route::patch('/extend/{id}','extend');
     Route::post('/return/{id}','return');
+});
+
+Route::controller(BookingController::class)->prefix('/booking')->middleware('auth:api')->group(function(){
+    Route::post('/create','create');
+    Route::get('/list','list');
+    Route::get('/retrieve/{id}','retrieve');
+    Route::put('/edit/{id}','update');
+    Route::delete('/delete/{id}','delete');
 });
