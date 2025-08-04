@@ -2455,6 +2455,18 @@
                         "type": "integer",
                         "example": 7
                     },
+                    "average_rating": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "total_ratings": {
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "rating_count": {
+                        "type": "integer",
+                        "example": 25
+                    },
                     "book_cover_url": {
                         "type": "string",
                         "format": "url",

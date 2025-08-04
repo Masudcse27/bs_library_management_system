@@ -153,7 +153,7 @@ class ReviewController extends Controller
      */
     public function list($book_id)
     {
-        $reviews = Review::where('book_id', $book_id)->get();
+        $reviews = Review::with('user')->where('book_id', $book_id)->get();
         return response()->json(['reviews' => ReviewResource::collection($reviews)], 200);
     }
 
