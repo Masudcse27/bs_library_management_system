@@ -47,3 +47,11 @@ Route::controller(DonationRequestController::class)->prefix('/donation')->middle
     Route::patch('/approve-reject/{id}','approve_reject');
 });
 
+Route::controller(ReviewController::class)->prefix('/review')->middleware('auth:api')->group(function(){
+    Route::post('/{book_id}/create','create');
+    Route::get('/{book_id}/list','list');
+    Route::get('/retrieve/{id}','retrieve');
+    Route::put('/edit/{id}','update');
+    Route::delete('/delete/{id}','delete');
+});
+
