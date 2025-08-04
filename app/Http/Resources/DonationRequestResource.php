@@ -32,13 +32,16 @@ class DonationRequestResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'user_id' => $this->user_id,
             'book_title' => $this->book_title,
             'author_name' => $this->author_name,
             'status' => $this->status,
             'number_of_copies' => $this->number_of_copies,
             'location' => $this->location,
-            'contact_number' => $this->contact_number
+            'contact_number' => $this->contact_number,
+            'user' => $this->whenLoaded('user', function () {
+                return new UserResource($this->user);
+            }, $this->user_id),
+
         ];
     }
 }
