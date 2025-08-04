@@ -102,9 +102,9 @@ class DonationRequestController extends Controller
         $user = $request->user();
 
         if ($user->role === 'admin') {
-            $donations = DonationRequest::where('status', 'pending')->get();
+            $donations = DonationRequest::with('user')->where('status', 'pending')->get();
         } else {
-            $donations = DonationRequest::where('user_id', $user->id)->get();
+            $donations = DonationRequest::with('user')->where('user_id', $user->id)->get();
         }
 
         return response()->json(DonationRequestResource::collection($donations), 200);
@@ -146,7 +146,7 @@ class DonationRequestController extends Controller
      */
     public function retrieve(Request $request, $id)
     {
-        $donation = DonationRequest::find($id);
+        $donation = DonationRequest::with('user')->find($id);
 
         if (!$donation) {
             return response()->json(['message' => 'Donation request not found'], 404);
