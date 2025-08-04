@@ -30,6 +30,10 @@ return new class extends Migration {
             $table->string('pdf_file')->nullable();
             $table->string('audio_file')->nullable();
 
+            $table->integer('average_rating')->default(0);
+            $table->integer('total_ratings')->default(0);
+            $table->integer('read_count')->default(0);
+            
             $table->timestamps();
         });
     }

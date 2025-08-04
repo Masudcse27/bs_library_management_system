@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DonationRequestController;
 use App\Http\Controllers\ReviewController;
@@ -55,3 +56,10 @@ Route::controller(ReviewController::class)->prefix('/review')->middleware('auth:
     Route::delete('/delete/{id}','delete');
 });
 
+Route::controller(BorrowController::class)->prefix('/borrow')->middleware('auth:api')->group(function(){
+    Route::post('/create','create');
+    Route::get('/list','list');
+    Route::get('/retrieve/{id}','retrieve');
+    Route::patch('/extend/{id}','extend');
+    Route::post('/return/{id}','return');
+});

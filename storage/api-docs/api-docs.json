@@ -569,6 +569,457 @@
                 ]
             }
         },
+        "/api/borrow/create": {
+            "post": {
+                "tags": [
+                    "Borrow"
+                ],
+                "summary": "Create a new borrow record (borrow a book)",
+                "operationId": "dabefcead89973bbcecb10a9ccb54de6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "book_id"
+                                ],
+                                "properties": {
+                                    "book_id": {
+                                        "description": "ID of the book to borrow",
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "return_date": {
+                                        "description": "Optional return date, must be today or later",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-30",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Book borrowed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book borrowed successfully"
+                                        },
+                                        "borrow": {
+                                            "$ref": "#/components/schemas/Borrow"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error or no available copies",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No available copies"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "An unexpected error occurred"
+                                        },
+                                        "details": {
+                                            "type": "string",
+                                            "example": "SQLSTATE[23000]: Integrity constraint violation..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/borrow/list": {
+            "get": {
+                "tags": [
+                    "Borrow"
+                ],
+                "summary": "List borrowed books",
+                "operationId": "098b5360f86ede640f6cec41877f223d",
+                "parameters": [
+                    {
+                        "name": "book_id",
+                        "in": "query",
+                        "description": "Filter by book ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of borrowed books",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "borrows": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Borrow"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token not provided or invalid"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/borrow/retrieve/{id}": {
+            "get": {
+                "tags": [
+                    "Borrow"
+                ],
+                "summary": "Retrieve a borrow record",
+                "description": "Retrieve a specific borrow record by ID. Admins can access all records, while normal users can only access their own.",
+                "operationId": "getBorrowRecord",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the borrow record",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful borrow record retrieval",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "borrow": {
+                                            "$ref": "#/components/schemas/Borrow"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized access to the borrow record"
+                    },
+                    "404": {
+                        "description": "Borrow record not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/borrows/extend/{id}": {
+            "patch": {
+                "tags": [
+                    "Borrow"
+                ],
+                "summary": "Extend return date of a borrow record",
+                "description": "Allows the authenticated user to extend the return date of a borrow, if no in-progress booking exists and extension limit is not exceeded.",
+                "operationId": "extendBorrow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the borrow record to extend",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "return_date"
+                                ],
+                                "properties": {
+                                    "return_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-08-15"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Borrow record extended successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Borrow record extended successfully"
+                                        },
+                                        "borrow": {
+                                            "$ref": "#/components/schemas/Borrow"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Extension blocked due to active booking or extension limit reached",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Extension limit exceeded"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized — user doesn't own the borrow record",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Borrow record not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Borrow record not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error (invalid return_date)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/borrows/return/{id}": {
+            "post": {
+                "tags": [
+                    "Borrow"
+                ],
+                "summary": "Return a borrowed book",
+                "description": "Allows a user to return a borrowed book. The borrow status is marked as 'returned'. If no upcoming booking exists, the available copies of the book are incremented.",
+                "operationId": "returnBorrow",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the borrow record",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 7
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Book returned successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book returned successfully"
+                                        },
+                                        "borrow": {
+                                            "$ref": "#/components/schemas/Borrow"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized – user doesn't own the borrow record",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Borrow record not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Borrow record not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Something went wrong"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/category/create": {
             "post": {
                 "tags": [
@@ -2025,6 +2476,62 @@
                 },
                 "type": "object"
             },
+            "Borrow": {
+                "required": [
+                    "id",
+                    "borrowed_at",
+                    "return_date",
+                    "status",
+                    "extension_count"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "borrowed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-01T10:00:00Z"
+                    },
+                    "return_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-31T23:59:59Z"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "borrowed"
+                    },
+                    "returned_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-25T14:30:00Z",
+                        "nullable": true
+                    },
+                    "extension_count": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "book": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Book"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "user": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "DonationRequest": {
                 "title": "DonationRequest",
                 "required": [
@@ -2142,6 +2649,49 @@
                     }
                 },
                 "type": "object"
+            },
+            "User": {
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "role"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john.doe@example.com"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "customer"
+                    },
+                    "date_of_birth": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-05-15"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "123 Main St, Dhaka, Bangladesh"
+                    },
+                    "profile_picture": {
+                        "type": "string",
+                        "format": "uri",
+                        "example": "https://example.com/storage/users/john.jpg",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -2156,6 +2706,10 @@
         {
             "name": "Books",
             "description": "Books"
+        },
+        {
+            "name": "Borrow",
+            "description": "Borrow"
         },
         {
             "name": "Categories",
