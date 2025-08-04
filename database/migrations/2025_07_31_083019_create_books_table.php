@@ -32,8 +32,8 @@ return new class extends Migration {
 
             $table->integer('average_rating')->default(0);
             $table->integer('total_ratings')->default(0);
-            $table->integer('read_count')->default(0);
-            
+            $table->integer('rating_count')->default(0);
+
             $table->timestamps();
         });
     }

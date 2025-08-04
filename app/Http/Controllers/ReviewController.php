@@ -6,6 +6,8 @@ use App\Http\Resources\ReviewResource;
 use App\Models\Book;
 use App\Models\Review;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ReviewController extends Controller
@@ -86,12 +88,37 @@ class ReviewController extends Controller
         $data['book_id'] = $book_id;
         $data['user_id'] = $request->user()->id;
 
-        $review = Review::create($data);
+        try {
+            $review = DB::transaction(function () use ($book, $data) {
+                $total_ratings = $book->total_ratings + $data['rating'];
+                $rating_count = $book->rating_count + 1;
+                $average_rating = $total_ratings / $rating_count;
 
-        return response()->json([
-            'message' => 'Review created successfully',
-            'review' => new ReviewResource($review),
-        ], 201);
+                $book->update([
+                    'total_ratings' => $total_ratings,
+                    'rating_count' => $rating_count,
+                    'average_rating' => $average_rating,
+                ]);
+
+                return Review::create($data);
+            });
+
+            return response()->json([
+                'message' => 'Review created successfully',
+                'review' => new ReviewResource($review),
+            ], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Review creation failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $request->user()->id,
+                'book_id' => $book_id,
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to create review. Please try again later.',
+            ], 500);
+        }
     }
 
     /**
@@ -246,17 +273,49 @@ class ReviewController extends Controller
             return response()->json(['errors' => $validatedData->errors()], 422);
         }
 
-        // Update the review
         $review = Review::find($id);
         if (!$review) {
             return response()->json(['message' => 'Review not found'], 404);
         }
+
         if ($review->user_id !== $request->user()->id) {
             return response()->json(['message' => 'You are not authorized to update this review'], 403);
         }
-        $review->update($validatedData->validated());
 
-        return response()->json(['message' => 'Review updated successfully', 'review' => new ReviewResource($review)], 202);
+        $data = $validatedData->validated();
+
+        try {
+            DB::transaction(function () use (&$review, $data) {
+                $book = Book::find($review->book_id);
+
+                $total_ratings = $book->total_ratings - $review->rating + $data['rating'];
+                $rating_count = $book->rating_count;
+                $average_rating = $rating_count > 0 ? $total_ratings / $rating_count : 0;
+
+                $book->update([
+                    'total_ratings' => $total_ratings,
+                    'average_rating' => $average_rating,
+                ]);
+
+                $review->update($data);
+            });
+
+            return response()->json([
+                'message' => 'Review updated successfully',
+                'review' => new ReviewResource($review),
+            ], 202);
+
+        } catch (\Exception $e) {
+            Log::error('Review update failed', [
+                'error' => $e->getMessage(),
+                'review_id' => $id,
+                'user_id' => $request->user()->id,
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to update review. Please try again later.',
+            ], 500);
+        }
     }
 
     /**
@@ -307,11 +366,40 @@ class ReviewController extends Controller
         if (!$review) {
             return response()->json(['message' => 'Review not found'], 404);
         }
+
         if ($review->user_id !== $request->user()->id) {
             return response()->json(['message' => 'You are not authorized to delete this review'], 403);
         }
-        $review->delete();
 
-        return response()->json(['message' => 'Review deleted successfully'], 200);
+        try {
+            DB::transaction(function () use ($review) {
+                $book = Book::find($review->book_id);
+
+                $total_ratings = $book->total_ratings - $review->rating;
+                $rating_count = $book->rating_count - 1;
+                $average_rating = $rating_count > 0 ? $total_ratings / $rating_count : 0;
+
+                $book->update([
+                    'total_ratings' => $total_ratings,
+                    'rating_count' => $rating_count,
+                    'average_rating' => $average_rating,
+                ]);
+
+                $review->delete();
+            });
+
+            return response()->json(['message' => 'Review deleted successfully'], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Review deletion failed', [
+                'error' => $e->getMessage(),
+                'review_id' => $id,
+                'user_id' => $request->user()->id,
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to delete review. Please try again later.',
+            ], 500);
+        }
     }
 }
