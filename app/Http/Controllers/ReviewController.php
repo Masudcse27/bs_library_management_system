@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BookResource;
 use App\Http\Resources\ReviewResource;
 use App\Models\Book;
 use App\Models\Review;
@@ -93,7 +94,7 @@ class ReviewController extends Controller
                 $total_ratings = $book->total_ratings + $data['rating'];
                 $rating_count = $book->rating_count + 1;
                 $average_rating = $total_ratings / $rating_count;
-
+                
                 $book->update([
                     'total_ratings' => $total_ratings,
                     'rating_count' => $rating_count,
@@ -105,6 +106,7 @@ class ReviewController extends Controller
 
             return response()->json([
                 'message' => 'Review created successfully',
+                'book' => new BookResource($book),
                 'review' => new ReviewResource($review),
             ], 201);
 

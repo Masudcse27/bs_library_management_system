@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class BorrowController extends Controller
 {
@@ -241,7 +242,7 @@ class BorrowController extends Controller
 
     /**
      * @OA\Patch(
-     *     path="/api/borrows/extend/{id}",
+     *     path="/api/borrow/extend/{id}",
      *     summary="Extend return date of a borrow record",
      *     description="Allows the authenticated user to extend the return date of a borrow, if no in-progress booking exists and extension limit is not exceeded.",
      *     operationId="extendBorrow",
@@ -308,7 +309,7 @@ class BorrowController extends Controller
      */
     public function extend(Request $request, $id)
     {
-        // Validate input
+        // 1. Validate input
         $validator = Validator::make($request->all(), [
             'return_date' => ['required', 'date', 'after_or_equal:today'],
         ]);
@@ -317,45 +318,52 @@ class BorrowController extends Controller
             return response()->json(['message' => $validator->errors()], 422);
         }
 
-        // Find the borrow record or fail early
+        // 2. Find borrow record
         $borrow = Borrow::find($id);
         if (!$borrow) {
             return response()->json(['message' => 'Borrow record not found'], 404);
         }
 
-        // Check ownership
+        // 3. Check ownership
         if ($request->user()->id !== $borrow->user_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Check for existing booking that blocks extension
-        $bookingExists = Booking::where('borrow_id', $borrow->id)->where('status', 'in_progress')->exists();
+        // 4. Check for any booking that prevents extension
+        $bookingExists = Booking::where('borrow_id', $borrow->id)
+            ->where('status', 'in_progress')
+            ->exists();
+
         if ($bookingExists) {
             return response()->json(['message' => 'Book already booked — cannot extend'], 400);
         }
 
-        // Check extension limit
-        $limit = Settings::value('max_extension_limit'); // Only fetch that column
-        if ($limit !== null && $borrow->extension_count >= $limit) {
+        // 5. Check extension limit
+        $limit = Settings::value('max_extension_limit');
+        if (!is_null($limit) && $borrow->extension_count >= $limit) {
             return response()->json(['message' => 'Extension limit exceeded'], 400);
         }
-        $maxBorrowDuration = Settings::value('max_borrow_duration') ?? 14;
-        if ($request->return_date) {
-            $returnDate = \Carbon\Carbon::parse($request->return_date);
-            $maxAllowedDate = $borrow->borrowed_at->copy()->addDays($maxBorrowDuration)->startOfDay();
 
-            if ($returnDate->greaterThan($maxAllowedDate)) {
-                return response()->json([
-                    'message' => "The return date cannot exceed {$maxBorrowDuration} days from the borrow date ({$borrow->borrowed_at->format('Y-m-d')})."
-                ], 422);
-            }
+        // 6. Enforce maximum borrow duration
+        $maxBorrowDuration = Settings::value('max_borrow_duration') ?? 14;
+
+        $returnDate = Carbon::parse($request->return_date);
+        $borrowedAt = Carbon::parse($borrow->borrowed_at); // Ensure Carbon instance
+        $maxAllowedDate = $borrowedAt->copy()->addDays($maxBorrowDuration)->startOfDay();
+
+        if ($returnDate->greaterThan($maxAllowedDate)) {
+            return response()->json([
+                'message' => "The return date cannot exceed {$maxBorrowDuration} days from the borrow date ({$borrowedAt->format('Y-m-d')})."
+            ], 422);
         }
-        // Update borrow
+
+        // 7. Update borrow record
         $borrow->update([
-            'return_date' => $request->return_date,
+            'return_date' => $returnDate->format('Y-m-d'),
             'extension_count' => $borrow->extension_count + 1,
         ]);
 
+        // 8. Return success response
         return response()->json([
             'message' => 'Borrow record extended successfully',
             'borrow' => new BorrowResource($borrow),
@@ -364,7 +372,7 @@ class BorrowController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/borrows/return/{id}",
+     *     path="/api/borrow/return/{id}",
      *     summary="Return a borrowed book",
      *     description="Allows a user to return a borrowed book. The borrow status is marked as 'returned'. If no upcoming booking exists, the available copies of the book are incremented.",
      *     operationId="returnBorrow",
@@ -430,7 +438,7 @@ class BorrowController extends Controller
         try {
             $book = Book::find($borrow->book_id);
             $bookingExists = Booking::where('borrow_id', $borrow->id)
-                ->where('status', 'in_progress')
+                ->where('status', 'pending')
                 ->first();
 
             // Mark the book as returned
@@ -450,6 +458,7 @@ class BorrowController extends Controller
 
             return response()->json([
                 'message' => 'Book returned successfully',
+                'booking' => $bookingExists,
                 'borrow' => new BorrowResource($borrow),
             ], 200);
 

@@ -15,7 +15,7 @@ class FeaturedBookController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/featured-books/{book_id}",
+     *     path="/api/featured-books/{book_id}/add",
      *     summary="Add a book to the featured list",
      *     description="Allows admin users to add a book to the featured list by its ID.",
      *     operationId="addFeaturedBook",
@@ -79,11 +79,12 @@ class FeaturedBookController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/featured-books",
+     *     path="/api/featured-books/list",
      *     summary="List all featured books",
      *     description="Returns a list of all books marked as featured.",
      *     operationId="listFeaturedBooks",
      *     tags={"Featured Books"},
+     *     security={{"bearerAuth":{}}},
      *
      *     @OA\Response(
      *         response=200,
@@ -107,7 +108,7 @@ class FeaturedBookController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/featured-books/{id}",
+     *     path="/api/featured-books/remove/{id}",
      *     summary="Remove a book from the featured list",
      *     description="Allows admin users to remove a book from the featured list.",
      *     operationId="removeFeaturedBook",

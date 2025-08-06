@@ -16,6 +16,9 @@ class Book extends Model
         'pdf_file',
         'audio_file',
         'category_id',
+        'total_ratings',
+        'rating_count',
+        'average_rating',
     ];
 
     public function category()

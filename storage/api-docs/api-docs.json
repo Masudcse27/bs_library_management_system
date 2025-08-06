@@ -569,14 +569,14 @@
                 ]
             }
         },
-        "/api/bookings/{borrow_id}": {
+        "/api/booking/{borrow_id}/create": {
             "post": {
                 "tags": [
                     "Bookings"
                 ],
                 "summary": "Create a new booking",
                 "description": "Creates a booking for a borrow record. The booking_date and expiry_date are automatically determined on the server.",
-                "operationId": "1936ab735c1ee10dce408d15459cda62",
+                "operationId": "7947ae5f2600dc7b2cba35111c53abf5",
                 "parameters": [
                     {
                         "name": "borrow_id",
@@ -649,7 +649,7 @@
                 ]
             }
         },
-        "/api/bookings": {
+        "/api/booking/list": {
             "get": {
                 "tags": [
                     "Bookings"
@@ -704,7 +704,7 @@
                 ]
             }
         },
-        "/api/bookings/{id}": {
+        "/api/booking/retrieve/{id}": {
             "get": {
                 "tags": [
                     "Bookings"
@@ -782,84 +782,9 @@
                         "bearerAuth": []
                     }
                 ]
-            },
-            "delete": {
-                "tags": [
-                    "Bookings"
-                ],
-                "summary": "Delete a booking",
-                "description": "Allows an admin or the booking owner to delete a booking.",
-                "operationId": "deleteBooking",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID of the booking to delete",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Booking deleted successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Booking deleted successfully"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Unauthorized access",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Unauthorized access"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Booking not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Booking not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
             }
         },
-        "/api/bookings/{id}/collect": {
+        "/api/booking/collect/{id}": {
             "put": {
                 "tags": [
                     "Bookings"
@@ -908,6 +833,83 @@
                                         "error": {
                                             "type": "string",
                                             "example": "Booking is not available for collection"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Booking not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Booking not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/booking/delete/{id}": {
+            "delete": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Delete a booking",
+                "description": "Allows an admin or the booking owner to delete a booking.",
+                "operationId": "deleteBooking",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the booking to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Booking deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized access",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthorized access"
                                         }
                                     },
                                     "type": "object"
@@ -1164,7 +1166,7 @@
                 ]
             }
         },
-        "/api/borrows/extend/{id}": {
+        "/api/borrow/extend/{id}": {
             "patch": {
                 "tags": [
                     "Borrow"
@@ -1294,7 +1296,7 @@
                 ]
             }
         },
-        "/api/borrows/return/{id}": {
+        "/api/borrow/return/{id}": {
             "post": {
                 "tags": [
                     "Borrow"
@@ -2080,7 +2082,7 @@
                 ]
             }
         },
-        "/api/featured-books/{book_id}": {
+        "/api/featured-books/{book_id}/add": {
             "post": {
                 "tags": [
                     "Featured Books"
@@ -2157,7 +2159,7 @@
                 ]
             }
         },
-        "/api/featured-books": {
+        "/api/featured-books/list": {
             "get": {
                 "tags": [
                     "Featured Books"
@@ -2179,10 +2181,15 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/api/featured-books/{id}": {
+        "/api/featured-books/remove/{id}": {
             "delete": {
                 "tags": [
                     "Featured Books"

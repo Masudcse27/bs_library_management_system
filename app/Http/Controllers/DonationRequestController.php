@@ -293,6 +293,9 @@ class DonationRequestController extends Controller
             return response()->json(['message' => 'Unauthorized access'], 403);
         }
 
+        if($donation->status === 'approved') {
+            return response()->json(['message' => 'Cannot delete approved donation requests'], 403);
+        }
         $donation->delete();
 
         return response()->json(['message' => 'Donation request deleted successfully'], 200);

@@ -6,6 +6,7 @@ use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Models\Borrow;
 use App\Models\Settings;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -13,12 +14,11 @@ class BookingController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/bookings/{borrow_id}",
+     *     path="/api/booking/{borrow_id}/create",
      *     summary="Create a new booking",
      *     description="Creates a booking for a borrow record. The booking_date and expiry_date are automatically determined on the server.",
      *     tags={"Bookings"},
      *     security={{"bearerAuth":{}}},
-     *     
      *
      *     @OA\Parameter(
      *         name="borrow_id",
@@ -93,7 +93,7 @@ class BookingController extends Controller
             'book_id' => $borrow->book_id,
             'borrow_id' => $borrow->id,
             'booking_date' => $borrow->return_date,
-            'expiry_date' => $borrow->return_date->copy()->addDays(7),
+            'expiry_date' => Carbon::parse($borrow->return_date)->copy()->addDays(7)->format('Y-m-d'),
         ]);
 
         return response()->json([
@@ -104,7 +104,7 @@ class BookingController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/bookings",
+     *     path="/api/booking/list",
      *     summary="List all bookings",
      *     description="Retrieve a list of bookings. Admins get all bookings with 'pending' or 'available' status. Normal users get their own bookings only.",
      *     operationId="getBookings",
@@ -157,7 +157,7 @@ class BookingController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/bookings/{id}",
+     *     path="/api/booking/retrieve/{id}",
      *     summary="Retrieve a specific booking",
      *     description="Get a booking by ID. Only the owner or an admin can access the booking details.",
      *     operationId="getBookingById",
@@ -221,7 +221,7 @@ class BookingController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/bookings/{id}/collect",
+     *     path="/api/booking/collect/{id}",
      *     summary="Collect a booking",
      *     description="Allows a user to mark their own booking as collected if it's available.",
      *     operationId="collectBooking",
@@ -288,7 +288,7 @@ class BookingController extends Controller
     }
     /**
      * @OA\Delete(
-     *     path="/api/bookings/{id}",
+     *     path="/api/booking/delete/{id}",
      *     summary="Delete a booking",
      *     description="Allows an admin or the booking owner to delete a booking.",
      *     operationId="deleteBooking",
