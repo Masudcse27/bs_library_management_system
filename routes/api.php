@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DonationRequestController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SettingsController;
+use App\Models\FeaturedBook;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -71,4 +72,10 @@ Route::controller(BookingController::class)->prefix('/booking')->middleware('aut
     Route::get('/retrieve/{id}','retrieve');
     Route::put('/collect/{id}','collect');
     Route::delete('/delete/{id}','delete');
+});
+
+Route::controller(FeaturedBook::class)->prefix('/featured')->middleware('auth:api')->group(function(){
+    Route::post('/{book_id}/add','addFeaturedBook');
+    Route::get('/list','list');
+    Route::post('/remove/{id}','removeFeaturedBook');
 });

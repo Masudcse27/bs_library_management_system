@@ -2080,6 +2080,185 @@
                 ]
             }
         },
+        "/api/featured-books/{book_id}": {
+            "post": {
+                "tags": [
+                    "Featured Books"
+                ],
+                "summary": "Add a book to the featured list",
+                "description": "Allows admin users to add a book to the featured list by its ID.",
+                "operationId": "addFeaturedBook",
+                "parameters": [
+                    {
+                        "name": "book_id",
+                        "in": "path",
+                        "description": "ID of the book to feature",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Book added to featured list successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book added to featured list successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/featured-books": {
+            "get": {
+                "tags": [
+                    "Featured Books"
+                ],
+                "summary": "List all featured books",
+                "description": "Returns a list of all books marked as featured.",
+                "operationId": "listFeaturedBooks",
+                "responses": {
+                    "200": {
+                        "description": "List of featured books",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/FeaturedBook"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/featured-books/{id}": {
+            "delete": {
+                "tags": [
+                    "Featured Books"
+                ],
+                "summary": "Remove a book from the featured list",
+                "description": "Allows admin users to remove a book from the featured list.",
+                "operationId": "removeFeaturedBook",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the featured book",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Book removed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book removed from featured list successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Featured book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Featured book not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/review/{book_id}/create": {
             "post": {
                 "tags": [
@@ -3042,6 +3221,32 @@
                 },
                 "type": "object"
             },
+            "FeaturedBook": {
+                "title": "FeaturedBook",
+                "required": [
+                    "id",
+                    "book"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "book": {
+                        "description": "Book object if loaded, otherwise book ID",
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Book"
+                            },
+                            {
+                                "type": "integer",
+                                "example": 10
+                            }
+                        ]
+                    }
+                },
+                "type": "object"
+            },
             "Review": {
                 "title": "Review",
                 "required": [
@@ -3181,6 +3386,10 @@
         {
             "name": "Donation Requests",
             "description": "Donation Requests"
+        },
+        {
+            "name": "Featured Books",
+            "description": "Featured Books"
         },
         {
             "name": "Reviews",
