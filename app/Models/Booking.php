@@ -24,4 +24,8 @@ class Booking extends Model
     {
         return $this->belongsTo(Book::class);
     }
+    public function borrow()
+    {
+        return $this->belongsTo(Borrow::class);
+    }
 }

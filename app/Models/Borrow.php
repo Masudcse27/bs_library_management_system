@@ -10,7 +10,7 @@ class Borrow extends Model
         'user_id',
         'book_id',
         'borrowed_at',
-        'due_date',
+        'return_date',
         'returned_at',
         'status',
         'extension_count',

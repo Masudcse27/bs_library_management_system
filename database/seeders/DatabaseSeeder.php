@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Settings;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -15,9 +16,14 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        if (!Settings::first()) {
+            Settings::create([
+                'max_borrow_duration' => 30,
+                'max_borrow_limit' => 3,
+                'max_extension_limit' => 2,
+                'max_booking_duration' => 7,
+                'max_booking_limit' => 3,
+            ]);
+        }
     }
 }
