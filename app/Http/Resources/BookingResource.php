@@ -5,6 +5,48 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @OA\Schema(
+ *     schema="Booking",
+ *     type="object",
+ *     title="Booking Resource",
+ *     required={"id", "user_id", "book_id", "status", "booking_date", "expiry_date"},
+ *
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="user_id", type="integer", example=5),
+ *     @OA\Property(property="book_id", type="integer", example=12),
+ *     @OA\Property(property="status", type="string", example="pending", description="Status of the booking (e.g., pending, approved, cancelled)"),
+ *     @OA\Property(property="booking_date", type="string", format="date", example="2025-08-04"),
+ *     @OA\Property(property="expiry_date", type="string", format="date", example="2025-08-11"),
+ *
+ *     @OA\Property(
+ *         property="book",
+ *         oneOf={
+ *             @OA\Schema(type="integer", example=12),
+ *             @OA\Schema(ref="#/components/schemas/Book")
+ *         },
+ *         description="Either book ID or full book object if loaded"
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="user",
+ *         oneOf={
+ *             @OA\Schema(type="integer", example=5),
+ *             @OA\Schema(ref="#/components/schemas/User")
+ *         },
+ *         description="Either user ID or full user object if loaded"
+ *     ),
+ *
+ *     @OA\Property(
+ *         property="Borrow",
+ *         oneOf={
+ *             @OA\Schema(type="integer", example=7),
+ *             @OA\Schema(ref="#/components/schemas/Borrow")
+ *         },
+ *         description="Either borrow ID or full borrow object if loaded"
+ *     )
+ * )
+ */
 class BookingResource extends JsonResource
 {
     /**

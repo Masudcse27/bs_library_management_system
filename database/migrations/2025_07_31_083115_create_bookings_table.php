@@ -24,7 +24,7 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->date('booking_date')->nullable();
             $table->date('expiry_date')->nullable();
-            $table->enum('status', ['in_progress','available','collected', 'expired'])->default('in_progress');
+            $table->enum('status', ['pending','available','collected', 'expired'])->default('pending');
             $table->timestamps();
         });
     }

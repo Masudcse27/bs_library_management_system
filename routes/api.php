@@ -66,9 +66,9 @@ Route::controller(BorrowController::class)->prefix('/borrow')->middleware('auth:
 });
 
 Route::controller(BookingController::class)->prefix('/booking')->middleware('auth:api')->group(function(){
-    Route::post('/create','create');
+    Route::post('/{borrow_id}/create','create');
     Route::get('/list','list');
     Route::get('/retrieve/{id}','retrieve');
-    Route::put('/edit/{id}','update');
+    Route::put('/collect/{id}','collect');
     Route::delete('/delete/{id}','delete');
 });
