@@ -5,6 +5,251 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/admin-dashboard/statistics": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get system statistics",
+                "operationId": "63209874b9061fab1f035dfff09b5327",
+                "responses": {
+                    "200": {
+                        "description": "Statistics retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_borrows": {
+                                            "type": "integer",
+                                            "example": 150
+                                        },
+                                        "total_returns": {
+                                            "type": "integer",
+                                            "example": 120
+                                        },
+                                        "overdue_borrows": {
+                                            "type": "integer",
+                                            "example": 15
+                                        },
+                                        "current_total_books": {
+                                            "type": "integer",
+                                            "example": 300
+                                        },
+                                        "new_members": {
+                                            "type": "integer",
+                                            "example": 25
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin-dashboard/borrows-chart": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get number of borrows per day for the last 7 days",
+                "operationId": "781c02277d07c2ef88f4b8a5bdee196e",
+                "responses": {
+                    "200": {
+                        "description": "Successful response with daily borrow counts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "day": {
+                                                "type": "string",
+                                                "example": "Monday"
+                                            },
+                                            "total": {
+                                                "type": "integer",
+                                                "example": 5
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin-dashboard/recent-borrows": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get recent borrows in the last 7 days (paginated)",
+                "description": "Returns a paginated list of recent borrows within the past week.",
+                "operationId": "getRecentBorrows",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of records per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful paginated response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Borrow"
+                                            }
+                                        },
+                                        "links": {
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string",
+                                                    "example": "http://yourdomain.com/api/borrows/recent?page=1"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "example": "http://yourdomain.com/api/borrows/recent?page=5"
+                                                },
+                                                "prev": {
+                                                    "type": "string",
+                                                    "example": null,
+                                                    "nullable": true
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "example": "http://yourdomain.com/api/borrows/recent?page=2",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "path": {
+                                                    "type": "string",
+                                                    "example": "http://yourdomain.com/api/borrows/recent"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin-dashboard/overdue-borrows": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get list of overdue borrowed books",
+                "operationId": "44ac62145bb3a8589376f18fca1c9949",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Overdue borrowed books list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Borrow"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/book/create": {
             "post": {
                 "tags": [
@@ -3374,6 +3619,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Dashboard",
+            "description": "Dashboard"
+        },
         {
             "name": "Books",
             "description": "Books"
