@@ -814,6 +814,48 @@
                 ]
             }
         },
+        "/api/book/recommended-books": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Get top recommended books for the authenticated user",
+                "description": "Returns up to 10 books based on user's most-read categories, excluding already borrowed books. Falls back to top-rated unread books.",
+                "operationId": "f615ce0c3b4d088f7b26e78205fb0b1a",
+                "responses": {
+                    "200": {
+                        "description": "Recommended books retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Recommended books"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Book"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/booking/{borrow_id}/create": {
             "post": {
                 "tags": [

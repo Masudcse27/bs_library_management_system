@@ -193,10 +193,10 @@ class BookController extends Controller
             $books = $query->get();
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => BookResource::collection($books),
-        ]);
+        return BookResource::collection($books)
+            ->additional(['status' => 'success'])
+            ->response()
+            ->setStatusCode(200);
     }
 
     /**
@@ -561,5 +561,61 @@ class BookController extends Controller
         }
         $available = $book->available_copies > 0;
         return response()->json(["is_available" => $available], 200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/book/recommended-books",
+     *     summary="Get top recommended books for the authenticated user",
+     *     description="Returns up to 10 books based on user's most-read categories, excluding already borrowed books. Falls back to top-rated unread books.",
+     *     tags={"Books"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Recommended books retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Recommended books"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Book")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function recommended_books(Request $request)
+    {
+        $user = $request->user();
+        $mostReadCategories = DB::table('borrows')
+            ->select('books.category_id', DB::raw('COUNT(*) as borrow_count'))
+            ->join('books', 'borrows.book_id', '=', 'books.id')
+            ->where('borrows.user_id', $user->id)
+            ->groupBy('books.category_id')
+            ->orderByDesc('borrow_count')
+            ->limit(5)
+            ->pluck('category_id');
+        $alreadyBorrowedBookIds = Borrow::where('user_id', $user->id)->pluck('book_id');
+
+        $recommendedBooks = Book::with('category')->whereIn('category_id', $mostReadCategories)
+            ->whereNotIn('id', $alreadyBorrowedBookIds)
+            ->orderByDesc('average_rating')
+            ->limit(10)
+            ->get();
+        if ($recommendedBooks->isEmpty()) {
+            $recommendedBooks = Book::with('category')
+                ->whereNotIn('id', $alreadyBorrowedBookIds)
+                ->orderByDesc('average_rating')
+                ->limit(10)
+                ->get();
+        }
+        return response()->json([
+            'message' => 'Recommended books',
+            'data' => BookResource::collection($recommendedBooks),
+        ], 200);
     }
 }

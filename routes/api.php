@@ -32,6 +32,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/popular-books', 'popular_books');
         Route::get('/new-collection', 'new_collection');
         Route::get('/{id}/is_available', 'is_available');
+        Route::get('/recommended-books', 'recommended_books');
     });
 
     Route::controller(SettingsController::class)->prefix('settings')->group(function () {
