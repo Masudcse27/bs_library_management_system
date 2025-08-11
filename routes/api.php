@@ -33,6 +33,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/new-collection', 'new_collection');
         Route::get('/{id}/is_available', 'is_available');
         Route::get('/recommended-books', 'recommended_books');
+        Route::get('/related-books/{id}', 'relatedBooks');
     });
 
     Route::controller(SettingsController::class)->prefix('settings')->group(function () {

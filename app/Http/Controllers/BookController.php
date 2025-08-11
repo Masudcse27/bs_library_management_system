@@ -618,4 +618,61 @@ class BookController extends Controller
             'data' => BookResource::collection($recommendedBooks),
         ], 200);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/book/related-books/{id}",
+     *     summary="Get related books by category",
+     *     description="Returns up to 5 books related to the given book by category, excluding the book itself.",
+     *     tags={"Books"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the book to find related books for",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Related books retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Related books"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Book")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Book not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Book not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function relatedBooks(Request $request, $id)
+    {
+        $book = Book::find($id);
+        if (!$book) {
+            return response()->json(["message" => "Book not found"], 400);
+        }
+
+        $relatedBooks = Book::where('category_id', $book->category_id)
+            ->where('id', '!=', $id)
+            ->limit(5)
+            ->get();
+
+        return response()->json([
+            'message' => 'Related books',
+            'data' => BookResource::collection($relatedBooks),
+        ], 200);
+    }
 }

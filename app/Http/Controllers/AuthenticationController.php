@@ -27,6 +27,7 @@ class AuthenticationController extends Controller
             }
 
             // Authenticate user with Tymon JWT and generate a Laravel token
+            JWTAuth::factory()->setTTL(1440);  // set token expiration to 1440 minutes (1 day)
             $laravelToken = JWTAuth::fromUser($user);
 
             var_dump($laravelToken);
