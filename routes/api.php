@@ -63,6 +63,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/retrieve/{id}', 'retrieve');
         Route::put('/edit/{id}', 'update');
         Route::delete('/delete/{id}', 'delete');
+        Route::get('/rating-star-count/{bookId}', 'ratingStarCount');
     });
 
     Route::controller(BorrowController::class)->prefix('/borrow')->group(function () {

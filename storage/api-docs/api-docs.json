@@ -3036,6 +3036,83 @@
                 ]
             }
         },
+        "/api/review/rating-star-count/{bookId}": {
+            "get": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Get count of ratings grouped by star for a book",
+                "description": "Returns the count of reviews for each star rating (1 to 5) for the given book ID",
+                "operationId": "ratingStarCount",
+                "parameters": [
+                    {
+                        "name": "bookId",
+                        "in": "path",
+                        "description": "ID of the book to get rating counts for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rating counts by star",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "1": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "2": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "3": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "4": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "5": {
+                                            "type": "integer",
+                                            "example": 12
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/settings/get-settings": {
             "get": {
                 "tags": [
