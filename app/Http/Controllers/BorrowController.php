@@ -114,7 +114,7 @@ class BorrowController extends Controller
 
             $borrow = new Borrow();
             $borrow->book_id = $request->book_id;
-            $borrow->user_id = auth()->id();
+            $borrow->user_id = $request->user()->id;
             $borrow->borrowed_at = now();
             $borrow->return_date = $request->return_date;
             $borrow->save();
@@ -168,7 +168,7 @@ class BorrowController extends Controller
     {
         $user = $request->user();
 
-        $query = Borrow::with('book', 'user')->where('status', 'borrowed');
+        $query = Borrow::with('book', 'user');
 
         if ($user->role !== 'admin') {
             $query->where('user_id', $user->id);
@@ -178,11 +178,10 @@ class BorrowController extends Controller
             $query->where('book_id', $request->query('book_id'));
         }
 
-        $borrows = $query->get();
+        $perPage = $request->query('per_page', 10);
+        $borrows = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        return response()->json([
-            'borrows' => BorrowResource::collection($borrows)
-        ], 200);
+        return BorrowResource::collection($borrows)->response()->setStatusCode(200);
     }
 
 

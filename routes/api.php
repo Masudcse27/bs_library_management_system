@@ -10,12 +10,15 @@ use App\Http\Controllers\DonationRequestController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\FeaturedBookController;
+use App\Http\Controllers\UserDashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('login', [AuthenticationController::class, 'login']);
+Route::get('/login', [AuthenticationController::class, 'login']);
 
 Route::middleware('auth:api')->group(function () {
+    Route::get('/user', [AuthenticationController::class, 'userData']);
+    Route::get('/logout', [AuthenticationController::class, 'logout']);
     Route::controller(CategoryController::class)->prefix('/category')->group(function () {
         Route::post('/create', 'create')->middleware('role:admin');
         Route::get('/list', 'list');
@@ -27,7 +30,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/create', 'create')->middleware('role:admin');
         Route::get('list', 'list');
         Route::get('/retrieve/{id}', 'retrieve');
-        Route::put('/edit/{id}', 'update')->middleware('role:admin');
+        Route::post('/edit/{id}', 'update')->middleware('role:admin');
         Route::delete('/delete/{id}', 'delete')->middleware('role:admin');
         Route::get('/popular-books', 'popular_books');
         Route::get('/new-collection', 'new_collection');
@@ -93,5 +96,13 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/borrows-chart', 'borrows_chart');
         Route::get('/recent-borrows', 'recent_borrows');
         Route::get('/overdue-borrows', 'overdue_borrows');
+        Route::get('/new-borrows', 'newBorrows');
+        Route::get('/borrows/{id}/approve', 'approveBorrow');
+        Route::get('/borrows/{id}/reject', 'rejectBorrow');
+        Route::get('/overdue-borrows', 'overdue_borrows');
+    });
+    Route::controller(UserDashboardController::class)->prefix('/user-dashboard')->group(function () {
+        Route::get('/statistics', 'statistics');
+        Route::get('/borrowed-books', 'borrowedBooks');
     });
 });

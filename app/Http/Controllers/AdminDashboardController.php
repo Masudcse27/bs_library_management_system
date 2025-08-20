@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Borrow;
 use App\Models\User;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -45,13 +46,14 @@ class AdminDashboardController extends Controller
             ->count();
         $currentTotalBooks = Book::count();
         $newMembers = User::where('created_at', '>=', now()->subMonth())->count();
-
+        $pendingBorrows = Borrow::where('status', 'pending')->count();
         return response()->json([
             'total_borrows' => $totalBorrows,
             'total_returns' => $totalReturns,
             'overdue_borrows' => $overDueBorrows,
             'current_total_books' => $currentTotalBooks,
             'new_members' => $newMembers,
+            'pending_borrows' => $pendingBorrows,
         ], 200);
     }
     /**
@@ -142,7 +144,7 @@ class AdminDashboardController extends Controller
     public function recent_borrows(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-        $recentBorrows = Borrow::with('book','user')->where('status', 'borrowed')
+        $recentBorrows = Borrow::with('book', 'user')->where('status', 'borrowed')
             ->where('borrowed_at', '>=', now()->subWeek())
             ->paginate($perPage);
         return (BorrowResource::collection($recentBorrows))
@@ -175,12 +177,193 @@ class AdminDashboardController extends Controller
     public function overdue_borrows(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-        $overdueBorrows = Borrow::with('book','user')->where('status', 'borrowed')
+        $overdueBorrows = Borrow::with('book', 'user')->where('status', 'borrowed')
             ->where('return_date', '<', now())
             ->paginate($perPage);
         return (BorrowResource::collection($overdueBorrows))
             ->response()
             ->setStatusCode(200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin-dashboard/new-borrows",
+     *     summary="Get list of new borrow requests",
+     *     tags={"Dashboard"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="New borrow requests list",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Borrow")),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function newBorrows(Request $request)
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        $newBorrows = Borrow::with('book', 'user')
+            ->where('status', 'pending')
+            ->paginate(10);
+        return (BorrowResource::collection($newBorrows))
+            ->response()
+            ->setStatusCode(200);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/admin-dashboard/borrows/{id}/approve",
+     *     summary="Approve a borrow request",
+     *     tags={"Dashboard"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Borrow request ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Borrow approved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Borrow approved successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Borrow request is not pending",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Borrow request is not pending")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Borrow request not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Borrow request not found")
+     *         )
+     *     )
+     * )
+     */
+    public function approveBorrow(Request $request, $id)
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        $borrow = Borrow::findOrFail($id);
+        if (!$borrow) {
+            return response()->json(['message' => 'Borrow request not found'], 404);
+        }
+        if ($borrow->status !== 'pending') {
+            return response()->json(['message' => 'Borrow request is not pending'], 400);
+        }
+        $borrow->status = 'borrowed';
+        $borrow->save();
+        return response()->json(['message' => 'Borrow approved successfully'], 200);
+    }
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/admin-dashboard/borrows/{id}/reject",
+     *     summary="Reject a borrow request",
+     *     tags={"Dashboard"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Borrow request ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Borrow rejected successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Borrow rejected successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Borrow request is not pending",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Borrow request is not pending")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Borrow request or Book not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Borrow request not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Failed to reject borrow request",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Failed to reject borrow request"),
+     *             @OA\Property(property="error", type="string", example="Detailed error message")
+     *         )
+     *     )
+     * )
+     */
+    public function rejectBorrow(Request $request, $id)
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        $borrow = Borrow::findOrFail($id);
+        if (!$borrow) {
+            return response()->json(['message' => 'Borrow request not found'], 404);
+        }
+        if ($borrow->status !== 'pending') {
+            return response()->json(['message' => 'Borrow request is not pending'], 400);
+        }
+        $book = Book::find($borrow->book_id);
+        if (!$book) {
+            return response()->json(['message' => 'Book not found'], 404);
+        }
+        try {
+            DB::transaction(function () use ($borrow, $book) {
+                $borrow->status = 'rejected';
+                $borrow->save();
+
+                $book->available_copies += 1;
+                $book->save();
+            });
+
+            return response()->json(['message' => 'Borrow rejected successfully'], 200);
+
+        } catch (Exception $e) {
+            // Log the error if needed: \Log::error($e->getMessage());
+
+            return response()->json([
+                'message' => 'Failed to reject borrow request',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
 }

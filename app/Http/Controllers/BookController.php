@@ -23,13 +23,12 @@ class BookController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"category_id", "name", "author", "total_copies", "available_copies"},
+     *                 required={"category_id", "name", "author", "total_copies"},
      *                 @OA\Property(property="category_id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="The Great Gatsby"),
      *                 @OA\Property(property="author", type="string", example="F. Scott Fitzgerald"),
      *                 @OA\Property(property="short_description", type="string", example="A novel set in the 1920s", nullable=true),
      *                 @OA\Property(property="total_copies", type="integer", example=10),
-     *                 @OA\Property(property="available_copies", type="integer", example=8),
      *                 @OA\Property(
      *                     property="book_cover",
      *                     type="file",
@@ -74,7 +73,7 @@ class BookController extends Controller
             'author' => 'required|string|max:255',
             'short_description' => 'nullable|string|max:1000',
             'total_copies' => 'required|integer|min:1',
-            'available_copies' => 'required|integer|min:0',
+            // 'available_copies' => 'required|integer|min:0',
             'book_cover' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:2048',
             'pdf_file' => 'nullable|file|mimes:pdf|max:20480', // 20MB
             'audio_file' => 'nullable|file|mimes:mp3,wav|max:20480', // 20MB
@@ -105,7 +104,7 @@ class BookController extends Controller
             'author' => $request->author,
             'short_description' => $request->short_description,
             'total_copies' => $request->total_copies,
-            'available_copies' => $request->available_copies,
+            'available_copies' => $request->total_copies,
             'book_cover' => $coverPath ?? null,
             'pdf_file' => $pdfPath ?? null,
             'audio_file' => $audioPath ?? null,
@@ -182,16 +181,10 @@ class BookController extends Controller
         }
 
         if ($request->has('category')) {
-            $query->whereHas('category', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->query('category') . '%');
-            });
+            $query->where('category_id', $request->query('category'));
         }
 
-        if ($request->has('per_page')) {
-            $books = $query->paginate($request->query('per_page', 10));
-        } else {
-            $books = $query->get();
-        }
+        $books = $query->paginate($request->query('per_page', 10));
 
         return BookResource::collection($books)
             ->additional(['status' => 'success'])
@@ -358,7 +351,6 @@ class BookController extends Controller
             'author' => 'required|string|max:255',
             'short_description' => 'nullable|string|max:1000',
             'total_copies' => 'required|integer|min:1',
-            'available_copies' => 'required|integer|min:0',
             'book_cover' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:2048',
             'pdf_file' => 'nullable|file|mimes:pdf|max:20480',
             'audio_file' => 'nullable|file|mimes:mp3,wav|max:20480',
@@ -370,13 +362,14 @@ class BookController extends Controller
                 'errors' => $validator->errors(),
             ], 400);
         }
+        $availableCopies = $request->available_copies + (abs($book->total_copies - $book->available_copies));
 
         $book->category_id = $request->category_id;
         $book->name = $request->name;
         $book->author = $request->author;
         $book->short_description = $request->short_description;
         $book->total_copies = $request->total_copies;
-        $book->available_copies = $request->available_copies;
+        $book->available_copies = $availableCopies;
 
         if ($request->hasFile('book_cover')) {
             $book->book_cover = $request->file('book_cover')->store('book_covers', 'public');
