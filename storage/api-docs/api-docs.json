@@ -2282,16 +2282,6 @@
                 "operationId": "2d299c2c5fd8771f38a0a38df0a2b58b",
                 "parameters": [
                     {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Page number",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 1
-                        }
-                    },
-                    {
                         "name": "per_page",
                         "in": "query",
                         "description": "Number of items per page",
@@ -3718,6 +3708,67 @@
                 ]
             }
         },
+        "/api/review/is-reviewed/{bookId}": {
+            "get": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Check if the authenticated user has reviewed a book",
+                "description": "Returns whether the logged-in user has already submitted a review for the given book ID",
+                "operationId": "isReviewed",
+                "parameters": [
+                    {
+                        "name": "bookId",
+                        "in": "path",
+                        "description": "ID of the book to check review status for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Review status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "is_reviewed": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/settings/get-settings": {
             "get": {
                 "tags": [
@@ -4329,6 +4380,24 @@
                             }
                         ],
                         "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Category": {
+                "title": "Category",
+                "required": [
+                    "id",
+                    "category_name"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "category_name": {
+                        "type": "string",
+                        "example": "Books"
                     }
                 },
                 "type": "object"

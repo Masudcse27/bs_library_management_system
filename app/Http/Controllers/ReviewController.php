@@ -85,9 +85,23 @@ class ReviewController extends Controller
             return response()->json(['message' => 'Book not found'], 404);
         }
 
+        $user_id = $request->user()->id;
+
+        // Check if user has already reviewed this book
+        $existingReview = Review::where('book_id', $book_id)
+            ->where('user_id', $user_id)
+            ->first();
+
+        if ($existingReview) {
+            return response()->json([
+                'message' => 'You have already reviewed this book.',
+                'review' => new ReviewResource($existingReview),
+            ], 409); // 409 Conflict
+        }
+
         $data = $validatedData->validated();
         $data['book_id'] = $book_id;
-        $data['user_id'] = $request->user()->id;
+        $data['user_id'] = $user_id;
 
         try {
             $review = DB::transaction(function () use ($book, $data) {
@@ -113,7 +127,7 @@ class ReviewController extends Controller
         } catch (\Exception $e) {
             Log::error('Review creation failed', [
                 'error' => $e->getMessage(),
-                'user_id' => $request->user()->id,
+                'user_id' => $user_id,
                 'book_id' => $book_id,
             ]);
 
@@ -459,5 +473,54 @@ class ReviewController extends Controller
         }
 
         return response()->json($result, 200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/review/is-reviewed/{bookId}",
+     *     summary="Check if the authenticated user has reviewed a book",
+     *     description="Returns whether the logged-in user has already submitted a review for the given book ID",
+     *     operationId="isReviewed",
+     *     tags={"Reviews"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="bookId",
+     *         in="path",
+     *         description="ID of the book to check review status for",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Review status",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="is_reviewed", type="boolean", example=true)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
+     */
+    public function is_reviewed(Request $request, $bookID)
+    {
+        $user_id = $request->user()->id;
+
+        // Check if user has already reviewed this book
+        $existingReview = Review::where('book_id', $bookID)
+            ->where('user_id', $user_id)
+            ->first();
+
+        return response()->json([
+            "is_reviewed" => $existingReview ? true : false
+        ], 200);
     }
 }
