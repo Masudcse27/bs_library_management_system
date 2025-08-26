@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
 use App\Models\Borrow;
+use App\Models\FeaturedBook;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -138,9 +139,9 @@ class BookController extends Controller
      *     @OA\Parameter(
      *         name="category",
      *         in="query",
-     *         description="Filter by category name",
+     *         description="Filter by category ID",
      *         required=false,
-     *         @OA\Schema(type="string")
+     *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Parameter(
      *         name="per_page",
@@ -148,6 +149,13 @@ class BookController extends Controller
      *         description="Number of results per page (pagination)",
      *         required=false,
      *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="non_featured",
+     *         in="query",
+     *         description="Return only books that are NOT featured. Pass 'true' to enable.",
+     *         required=false,
+     *         @OA\Schema(type="boolean", default=false)
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -184,7 +192,13 @@ class BookController extends Controller
             $query->where('category_id', $request->query('category'));
         }
 
-        $books = $query->paginate($request->query('per_page', 10));
+        if ($request->has('non_featured')) {
+            $featuredBookIds = FeaturedBook::pluck('book_id')->toArray();
+            if (!empty($featuredBookIds)) {
+                $query->whereNotIn('id', $featuredBookIds);
+            }
+        }
+        $books = $query->paginate($request->query('per_page', 9));
 
         return BookResource::collection($books)
             ->additional(['status' => 'success'])
@@ -667,5 +681,17 @@ class BookController extends Controller
             'message' => 'Related books',
             'data' => BookResource::collection($relatedBooks),
         ], 200);
+    }
+    public function downloadPdf($filename)
+    {
+        $path = storage_path("app/public/book/pdfs/{$filename}");
+
+        if (!file_exists($path)) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+
+        return response()->download($path, $filename, [
+            'Access-Control-Allow-Origin' => '*', // allow frontend access
+        ]);
     }
 }

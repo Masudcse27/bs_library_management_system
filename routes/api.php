@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', [AuthenticationController::class, 'login']);
-
+Route::get('/book/download-pdf/{filename}', [BookController::class, 'downloadPdf']);
 Route::middleware('auth:api')->group(function () {
     Route::get('/user', [AuthenticationController::class, 'userData']);
     Route::get('/logout', [AuthenticationController::class, 'logout']);
@@ -57,7 +57,9 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/retrieve/{id}', 'retrieve');
         Route::put('/edit/{id}', 'update');
         Route::delete('/delete/{id}', 'delete');
-        Route::patch('/approve-reject/{id}', 'approve_reject')->middleware('role:admin');
+        Route::get('/collect/{id}', 'collect')->middleware('role:admin');
+        Route::get('/collected', 'collectedDonations');
+        Route::get('/pending', 'pendingDonations');
     });
 
     Route::controller(ReviewController::class)->prefix('/review')->group(function () {
@@ -105,4 +107,5 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/statistics', 'statistics');
         Route::get('/borrowed-books', 'borrowedBooks');
     });
+    
 });

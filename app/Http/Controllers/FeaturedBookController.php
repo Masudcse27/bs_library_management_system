@@ -98,8 +98,11 @@ class FeaturedBookController extends Controller
      */
     public function list()
     {
-        $featuredBooks = FeaturedBook::with('book')->get();
-        return response()->json(FeaturedBookResource::collection($featuredBooks), 200);
+        $featuredBooks = FeaturedBook::with('book','book.category')->paginate(9);
+        return FeaturedBookResource::collection($featuredBooks)
+            ->additional(['status' => 'success'])
+            ->response()
+            ->setStatusCode(200);
     }
 
     /**

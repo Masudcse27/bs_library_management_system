@@ -812,10 +812,10 @@
                     {
                         "name": "category",
                         "in": "query",
-                        "description": "Filter by category name",
+                        "description": "Filter by category ID",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     },
                     {
@@ -826,6 +826,16 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
+                        }
+                    },
+                    {
+                        "name": "non_featured",
+                        "in": "query",
+                        "description": "Return only books that are NOT featured. Pass 'true' to enable.",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
                         }
                     }
                 ],
@@ -2268,16 +2278,38 @@
                 "tags": [
                     "Categories"
                 ],
-                "summary": "Get all categories",
+                "summary": "Get all categories (paginated)",
                 "operationId": "2d299c2c5fd8771f38a0a38df0a2b58b",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of categories",
+                        "description": "Paginated list of categories",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "categories": {
+                                        "data": {
                                             "type": "array",
                                             "items": {
                                                 "properties": {
@@ -2300,6 +2332,56 @@
                                                 },
                                                 "type": "object"
                                             }
+                                        },
+                                        "links": {
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string",
+                                                    "example": "http://example.com/api/category/list?page=1"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "example": "http://example.com/api/category/list?page=5"
+                                                },
+                                                "prev": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2508,28 +2590,25 @@
                                 "required": [
                                     "book_title",
                                     "number_of_copies",
-                                    "contact_number"
+                                    "bs_id",
+                                    "sbu"
                                 ],
                                 "properties": {
                                     "book_title": {
                                         "type": "string",
                                         "example": "Clean Code"
                                     },
-                                    "author_name": {
-                                        "type": "string",
-                                        "example": "Robert C. Martin"
-                                    },
                                     "number_of_copies": {
                                         "type": "integer",
                                         "example": 2
                                     },
-                                    "location": {
+                                    "bs_id": {
                                         "type": "string",
-                                        "example": "Chittagong Central Library"
+                                        "example": "BS123"
                                     },
-                                    "contact_number": {
+                                    "sbu": {
                                         "type": "string",
-                                        "example": "+8801771234567"
+                                        "example": "SBU456"
                                     }
                                 },
                                 "type": "object"
@@ -2592,6 +2671,132 @@
                                     "items": {
                                         "$ref": "#/components/schemas/DonationRequest"
                                     }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/donation/pending": {
+            "get": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "List pending donation requests",
+                "description": "Admins see all pending donation requests. Users see only their own pending requests.",
+                "operationId": "pendingDonations",
+                "responses": {
+                    "200": {
+                        "description": "List of pending donation requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/DonationRequest"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 45
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/donation/collected": {
+            "get": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "List collected donation requests",
+                "description": "Admins see all collected donation requests. Users see only their own collected requests.",
+                "operationId": "collectedDonations",
+                "responses": {
+                    "200": {
+                        "description": "List of collected donation requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/DonationRequest"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 25
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -2789,14 +2994,14 @@
                 ]
             }
         },
-        "/api/donation/approve-reject/{id}": {
-            "patch": {
+        "/api/donation/collect/{id}": {
+            "get": {
                 "tags": [
                     "Donation Requests"
                 ],
-                "summary": "Approve or reject a donation request",
-                "description": "Only admin users can approve or reject donation requests.",
-                "operationId": "approveRejectDonationRequest",
+                "summary": "Collect a donation request",
+                "description": "Only admin users can collect donation requests.",
+                "operationId": "collectDonationRequest",
                 "parameters": [
                     {
                         "name": "id",
@@ -2808,29 +3013,6 @@
                         }
                     }
                 ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "action"
-                                ],
-                                "properties": {
-                                    "action": {
-                                        "type": "string",
-                                        "enum": [
-                                            "approve",
-                                            "reject"
-                                        ],
-                                        "example": "approve"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "202": {
                         "description": "Donation request status updated",
@@ -4159,7 +4341,8 @@
                     "book_title",
                     "status",
                     "number_of_copies",
-                    "contact_number"
+                    "bs_id",
+                    "sbu"
                 ],
                 "properties": {
                     "id": {
@@ -4174,10 +4357,6 @@
                         "type": "string",
                         "example": "Introduction to Algorithms"
                     },
-                    "author_name": {
-                        "type": "string",
-                        "example": "Thomas H. Cormen"
-                    },
                     "status": {
                         "type": "string",
                         "enum": [
@@ -4191,13 +4370,13 @@
                         "type": "integer",
                         "example": 2
                     },
-                    "location": {
+                    "bs_id": {
                         "type": "string",
-                        "example": "Dhaka Library Zone 3"
+                        "example": "BS123"
                     },
-                    "contact_number": {
+                    "sbu": {
                         "type": "string",
-                        "example": "+8801700000000"
+                        "example": "SBU456"
                     }
                 },
                 "type": "object"

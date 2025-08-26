@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use GuzzleHttp\Psr7\Message;
 use Illuminate\Http\Request;
@@ -67,16 +68,21 @@ class CategoryController extends Controller
     /**
      * @OA\Get(
      *     path="/api/category/list",
-     *     summary="Get all categories",
+     *     summary="Get all categories (paginated)",
      *     tags={"Categories"},
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Number of items per page",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="List of categories",
+     *         description="Paginated list of categories",
      *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="categories",
-     *                 type="array",
+     *             @OA\Property(property="data", type="array",
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="id", type="integer", example=1),
@@ -84,17 +90,39 @@ class CategoryController extends Controller
      *                     @OA\Property(property="created_at", type="string", example="2024-07-31T10:15:00Z"),
      *                     @OA\Property(property="updated_at", type="string", example="2024-07-31T10:20:00Z")
      *                 )
+     *             ),
+     *             @OA\Property(property="links", type="object",
+     *                 @OA\Property(property="first", type="string", example="http://example.com/api/category/list?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://example.com/api/category/list?page=5"),
+     *                 @OA\Property(property="prev", type="string", nullable=true),
+     *                 @OA\Property(property="next", type="string", nullable=true)
+     *             ),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="from", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=5),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="to", type="integer", example=10),
+     *                 @OA\Property(property="total", type="integer", example=50)
      *             )
      *         )
      *     )
      * )
      */
-    public function list()
+    public function list(Request $request)
     {
-        $categories = Category::all();
-        return response()->json([
-            "categories" => $categories
-        ], 200);
+        $categories = Category::query();
+
+        if ($request->has("per_page")) {
+            $categories = $categories->paginate($request->per_page);
+        } else {
+            $categories = $categories->get();
+        }
+
+        return CategoryResource::collection($categories)
+            ->additional(['status' => 'success'])
+            ->response()
+            ->setStatusCode(200);
     }
 
     /**

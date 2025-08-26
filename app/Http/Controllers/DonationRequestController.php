@@ -20,12 +20,11 @@ class DonationRequestController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"book_title", "number_of_copies", "contact_number"},
+     *             required={"book_title", "number_of_copies", "bs_id", "sbu"},
      *             @OA\Property(property="book_title", type="string", example="Clean Code"),
-     *             @OA\Property(property="author_name", type="string", example="Robert C. Martin"),
      *             @OA\Property(property="number_of_copies", type="integer", example=2),
-     *             @OA\Property(property="location", type="string", example="Chittagong Central Library"),
-     *             @OA\Property(property="contact_number", type="string", example="+8801771234567")
+     *             @OA\Property(property="bs_id", type="string", example="BS123"),
+     *             @OA\Property(property="sbu", type="string", example="SBU456")
      *         )
      *     ),
      *     @OA\Response(
@@ -52,10 +51,9 @@ class DonationRequestController extends Controller
 
         $validator = Validator::make($request->all(), [
             'book_title' => 'required|string|max:255',
-            'author_name' => 'nullable|string|max:255',
             'number_of_copies' => 'required|integer|min:1',
-            'location' => 'nullable|string|max:255',
-            'contact_number' => 'required|string|max:50',
+            'bs_id' => 'required|string|max:255',
+            'sbu' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -65,10 +63,9 @@ class DonationRequestController extends Controller
         $donationRequest = DonationRequest::create([
             'user_id' => $user->id,
             'book_title' => $request->book_title,
-            'author_name' => $request->author_name,
             'number_of_copies' => $request->number_of_copies,
-            'location' => $request->location,
-            'contact_number' => $request->contact_number,
+            'bs_id' => $request->bs_id,
+            'sbu' => $request->sbu,
             'status' => 'pending',
         ]);
 
@@ -102,12 +99,120 @@ class DonationRequestController extends Controller
         $user = $request->user();
 
         if ($user->role === 'admin') {
-            $donations = DonationRequest::with('user')->where('status', 'pending')->get();
+            $donations = DonationRequest::with('user')->paginate(10);
+
         } else {
-            $donations = DonationRequest::with('user')->where('user_id', $user->id)->get();
+            $donations = DonationRequest::with('user')->where('user_id', $user->id)->paginate(3);
         }
 
-        return response()->json(DonationRequestResource::collection($donations), 200);
+        return DonationRequestResource::collection($donations)
+            ->additional(['status' => 'success'])
+            ->response()
+            ->setStatusCode(200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/donation/pending",
+     *     summary="List pending donation requests",
+     *     description="Admins see all pending donation requests. Users see only their own pending requests.",
+     *     operationId="pendingDonations",
+     *     tags={"Donation Requests"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of pending donation requests",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/DonationRequest")
+     *             ),
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=5),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="total", type="integer", example=45)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function pendingDonations(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role === 'admin') {
+            $donations = DonationRequest::with('user')->where('status', 'pending')->paginate(2);
+
+        } else {
+            $donations = DonationRequest::with('user')->where('user_id', $user->id)->where('status', 'pending')->paginate(2);
+        }
+
+        return DonationRequestResource::collection($donations)
+            ->additional(['status' => 'success'])
+            ->response()
+            ->setStatusCode(200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/donation/collected",
+     *     summary="List collected donation requests",
+     *     description="Admins see all collected donation requests. Users see only their own collected requests.",
+     *     operationId="collectedDonations",
+     *     tags={"Donation Requests"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of collected donation requests",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/DonationRequest")
+     *             ),
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=3),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="total", type="integer", example=25)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function collectedDonations(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role === 'admin') {
+            $donations = DonationRequest::with('user')->where('status', 'collected')->paginate(2);
+
+        } else {
+            $donations = DonationRequest::with('user')->where('user_id', $user->id)->where('status', 'collected')->paginate(2);
+        }
+
+        return DonationRequestResource::collection($donations)
+            ->additional(['status' => 'success'])
+            ->response()
+            ->setStatusCode(200);
     }
 
     /**
@@ -221,11 +326,10 @@ class DonationRequestController extends Controller
             return response()->json(['message' => 'Unauthorized access'], 403);
         }
         $validator = Validator::make($request->all(), [
-            'book_title' => 'sometimes|required|string|max:255',
-            'author_name' => 'nullable|string|max:255',
-            'number_of_copies' => 'sometimes|required|integer|min:1',
-            'location' => 'nullable|string|max:255',
-            'contact_number' => 'sometimes|required|string|max:50',
+            'book_title' => 'required|string|max:255',
+            'number_of_copies' => 'required|integer|min:1',
+            'bs_id' => 'required|string|max:255',
+            'sbu' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -234,10 +338,9 @@ class DonationRequestController extends Controller
 
         $donation->update($request->only([
             'book_title',
-            'author_name',
+            'bs_id',
             'number_of_copies',
-            'location',
-            'contact_number'
+            'sbu',
         ]));
 
         return response()->json(new DonationRequestResource($donation), 200);
@@ -293,7 +396,7 @@ class DonationRequestController extends Controller
             return response()->json(['message' => 'Unauthorized access'], 403);
         }
 
-        if($donation->status === 'approved') {
+        if ($donation->status === 'approved') {
             return response()->json(['message' => 'Cannot delete approved donation requests'], 403);
         }
         $donation->delete();
@@ -302,11 +405,11 @@ class DonationRequestController extends Controller
     }
 
     /**
-     * @OA\Patch(
-     *     path="/api/donation/approve-reject/{id}",
-     *     summary="Approve or reject a donation request",
-     *     description="Only admin users can approve or reject donation requests.",
-     *     operationId="approveRejectDonationRequest",
+     * @OA\get(
+     *     path="/api/donation/collect/{id}",
+     *     summary="Collect a donation request",
+     *     description="Only admin users can collect donation requests.",
+     *     operationId="collectDonationRequest",
      *     tags={"Donation Requests"},
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
@@ -315,13 +418,6 @@ class DonationRequestController extends Controller
      *         required=true,
      *         description="ID of the donation request",
      *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"action"},
-     *             @OA\Property(property="action", type="string", enum={"approve", "reject"}, example="approve")
-     *         )
      *     ),
      *     @OA\Response(
      *         response=202,
@@ -346,7 +442,7 @@ class DonationRequestController extends Controller
      *     )
      * )
      */
-    public function approve_reject(Request $request, $id)
+    public function collect(Request $request, $id)
     {
         $donation = DonationRequest::find($id);
 
@@ -360,13 +456,7 @@ class DonationRequestController extends Controller
             return response()->json(['message' => 'Unauthorized access'], 403);
         }
 
-        $action = $request->input('action');
-
-        if (!in_array($action, ['approve', 'reject'])) {
-            return response()->json(['message' => 'Invalid action'], 400);
-        }
-
-        $donation->status = $action == 'approve' ? 'approved' : 'rejected';
+        $donation->status = 'collected';
         $donation->save();
 
         return response()->json(new DonationRequestResource($donation), 202);
