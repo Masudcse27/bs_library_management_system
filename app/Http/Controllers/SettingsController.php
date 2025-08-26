@@ -57,9 +57,9 @@ class SettingsController extends Controller
      */
     public function borrow_day_limit(Request $request)
     {
-        $request->validate(['max_borrow_duration' => 'required|integer|min:1']);
+        $request->validate(['value' => 'required|integer|min:1']);
         $setting = $this->getSetting();
-        $setting->update(['max_borrow_duration' => $request->max_borrow_duration]);
+        $setting->update(['max_borrow_duration' => $request->value]);
 
         return response()->json([
             'message' => 'Borrow duration updated successfully',
@@ -90,9 +90,9 @@ class SettingsController extends Controller
      */
     public function borrow_extend_limit(Request $request)
     {
-        $request->validate(['max_extension_limit' => 'required|integer|min:0']);
+        $request->validate(['value' => 'required|integer|min:0']);
         $setting = $this->getSetting();
-        $setting->update(['max_extension_limit' => $request->max_extension_limit]);
+        $setting->update(['max_extension_limit' => $request->value]);
 
         return response()->json([
             'message' => 'Borrow extension count updated successfully',
@@ -123,9 +123,9 @@ class SettingsController extends Controller
      */
     public function borrow_limit(Request $request)
     {
-        $request->validate(['max_borrow_limit' => 'required|integer|min:1']);
+        $request->validate(['value' => 'required|integer|min:1']);
         $setting = $this->getSetting();
-        $setting->update(['max_borrow_limit' => $request->max_borrow_limit]);
+        $setting->update(['max_borrow_limit' => $request->value]);
 
         return response()->json([
             'message' => 'Borrow limit updated successfully',
@@ -156,9 +156,9 @@ class SettingsController extends Controller
      */
     public function booking_duration(Request $request)
     {
-        $request->validate(['max_booking_duration' => 'required|integer|min:1']);
+        $request->validate(['value' => 'required|integer|min:1']);
         $setting = $this->getSetting();
-        $setting->update(['max_booking_duration' => $request->max_booking_duration]);
+        $setting->update(['max_booking_duration' => $request->value]);
 
         return response()->json([
             'message' => 'Booking duration updated successfully',
@@ -189,9 +189,9 @@ class SettingsController extends Controller
      */
     public function booking_days_limit(Request $request)
     {
-        $request->validate(['max_booking_limit' => 'required|integer|min:1']);
+        $request->validate(['value' => 'required|integer|min:1']);
         $setting = $this->getSetting();
-        $setting->update(['max_booking_limit' => $request->max_booking_limit]);
+        $setting->update(['max_booking_limit' => $request->value]);
 
         return response()->json([
             'message' => 'Booking limit updated successfully',

@@ -250,6 +250,434 @@
                 ]
             }
         },
+        "/api/admin-dashboard/new-borrows": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get list of new borrow requests",
+                "operationId": "e2c41d3884da185f0894c7faef3734c7",
+                "responses": {
+                    "200": {
+                        "description": "New borrow requests list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Borrow"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin-dashboard/borrows/{id}/approve": {
+            "post": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Approve a borrow request",
+                "operationId": "d544a870f6d46f1d499f510cc71cb010",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Borrow request ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Borrow approved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Borrow approved successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Borrow request is not pending",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Borrow request is not pending"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Borrow request not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Borrow request not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin-dashboard/borrows/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Reject a borrow request",
+                "operationId": "9ea27d3284f7fba5040d7acdd315262e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Borrow request ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Borrow rejected successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Borrow rejected successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Borrow request is not pending",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Borrow request is not pending"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Borrow request or Book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Borrow request not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to reject borrow request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to reject borrow request"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Detailed error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/login": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login using Moodle JWT token",
+                "operationId": "b07540b57460587b80b79b3e465a5c9a",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "description": "Moodle-issued JWT token",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Laravel JWT token issued",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJh..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "User not found in Laravel",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "User not found in Laravel"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid token"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Signature verification failed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get authenticated user data",
+                "operationId": "907f86ea2e9f4189ae6e5462adc48a62",
+                "responses": {
+                    "200": {
+                        "description": "Authenticated user data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "John Doe"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "john@example.com"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-08-13T12:34:56Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-08-13T12:34:56Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/logout": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout user",
+                "operationId": "64c70c93ad6113cd7d3b6f65b7bc323d",
+                "responses": {
+                    "200": {
+                        "description": "Successfully logged out",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully logged out"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to log out",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Failed to log out"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/book/create": {
             "post": {
                 "tags": [
@@ -266,8 +694,7 @@
                                     "category_id",
                                     "name",
                                     "author",
-                                    "total_copies",
-                                    "available_copies"
+                                    "total_copies"
                                 ],
                                 "properties": {
                                     "category_id": {
@@ -290,10 +717,6 @@
                                     "total_copies": {
                                         "type": "integer",
                                         "example": 10
-                                    },
-                                    "available_copies": {
-                                        "type": "integer",
-                                        "example": 8
                                     },
                                     "book_cover": {
                                         "description": "Book cover image (jpg, jpeg, png, gif)",
@@ -389,10 +812,10 @@
                     {
                         "name": "category",
                         "in": "query",
-                        "description": "Filter by category name",
+                        "description": "Filter by category ID",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     },
                     {
@@ -403,6 +826,16 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
+                        }
+                    },
+                    {
+                        "name": "non_featured",
+                        "in": "query",
+                        "description": "Return only books that are NOT featured. Pass 'true' to enable.",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
                         }
                     }
                 ],
@@ -805,6 +1238,118 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/book/recommended-books": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Get top recommended books for the authenticated user",
+                "description": "Returns up to 10 books based on user's most-read categories, excluding already borrowed books. Falls back to top-rated unread books.",
+                "operationId": "f615ce0c3b4d088f7b26e78205fb0b1a",
+                "responses": {
+                    "200": {
+                        "description": "Recommended books retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Recommended books"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Book"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/book/related-books/{id}": {
+            "get": {
+                "tags": [
+                    "Books"
+                ],
+                "summary": "Get related books by category",
+                "description": "Returns up to 5 books related to the given book by category, excluding the book itself.",
+                "operationId": "ed518e40f31ab409eb1c3752c81c19ff",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the book to find related books for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Related books retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Related books"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Book"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
                     }
                 },
                 "security": [
@@ -1733,16 +2278,28 @@
                 "tags": [
                     "Categories"
                 ],
-                "summary": "Get all categories",
+                "summary": "Get all categories (paginated)",
                 "operationId": "2d299c2c5fd8771f38a0a38df0a2b58b",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of categories",
+                        "description": "Paginated list of categories",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "categories": {
+                                        "data": {
                                             "type": "array",
                                             "items": {
                                                 "properties": {
@@ -1765,6 +2322,56 @@
                                                 },
                                                 "type": "object"
                                             }
+                                        },
+                                        "links": {
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string",
+                                                    "example": "http://example.com/api/category/list?page=1"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "example": "http://example.com/api/category/list?page=5"
+                                                },
+                                                "prev": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "from": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "to": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -1973,28 +2580,25 @@
                                 "required": [
                                     "book_title",
                                     "number_of_copies",
-                                    "contact_number"
+                                    "bs_id",
+                                    "sbu"
                                 ],
                                 "properties": {
                                     "book_title": {
                                         "type": "string",
                                         "example": "Clean Code"
                                     },
-                                    "author_name": {
-                                        "type": "string",
-                                        "example": "Robert C. Martin"
-                                    },
                                     "number_of_copies": {
                                         "type": "integer",
                                         "example": 2
                                     },
-                                    "location": {
+                                    "bs_id": {
                                         "type": "string",
-                                        "example": "Chittagong Central Library"
+                                        "example": "BS123"
                                     },
-                                    "contact_number": {
+                                    "sbu": {
                                         "type": "string",
-                                        "example": "+8801771234567"
+                                        "example": "SBU456"
                                     }
                                 },
                                 "type": "object"
@@ -2057,6 +2661,132 @@
                                     "items": {
                                         "$ref": "#/components/schemas/DonationRequest"
                                     }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/donation/pending": {
+            "get": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "List pending donation requests",
+                "description": "Admins see all pending donation requests. Users see only their own pending requests.",
+                "operationId": "pendingDonations",
+                "responses": {
+                    "200": {
+                        "description": "List of pending donation requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/DonationRequest"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 45
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/donation/collected": {
+            "get": {
+                "tags": [
+                    "Donation Requests"
+                ],
+                "summary": "List collected donation requests",
+                "description": "Admins see all collected donation requests. Users see only their own collected requests.",
+                "operationId": "collectedDonations",
+                "responses": {
+                    "200": {
+                        "description": "List of collected donation requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/DonationRequest"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 25
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -2254,14 +2984,14 @@
                 ]
             }
         },
-        "/api/donation/approve-reject/{id}": {
-            "patch": {
+        "/api/donation/collect/{id}": {
+            "get": {
                 "tags": [
                     "Donation Requests"
                 ],
-                "summary": "Approve or reject a donation request",
-                "description": "Only admin users can approve or reject donation requests.",
-                "operationId": "approveRejectDonationRequest",
+                "summary": "Collect a donation request",
+                "description": "Only admin users can collect donation requests.",
+                "operationId": "collectDonationRequest",
                 "parameters": [
                     {
                         "name": "id",
@@ -2273,29 +3003,6 @@
                         }
                     }
                 ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "action"
-                                ],
-                                "properties": {
-                                    "action": {
-                                        "type": "string",
-                                        "enum": [
-                                            "approve",
-                                            "reject"
-                                        ],
-                                        "example": "approve"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "202": {
                         "description": "Donation request status updated",
@@ -2924,6 +3631,144 @@
                 ]
             }
         },
+        "/api/review/rating-star-count/{bookId}": {
+            "get": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Get count of ratings grouped by star for a book",
+                "description": "Returns the count of reviews for each star rating (1 to 5) for the given book ID",
+                "operationId": "ratingStarCount",
+                "parameters": [
+                    {
+                        "name": "bookId",
+                        "in": "path",
+                        "description": "ID of the book to get rating counts for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rating counts by star",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "1": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "2": {
+                                            "type": "integer",
+                                            "example": 0
+                                        },
+                                        "3": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "4": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "5": {
+                                            "type": "integer",
+                                            "example": 12
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Book not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Book not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/review/is-reviewed/{bookId}": {
+            "get": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Check if the authenticated user has reviewed a book",
+                "description": "Returns whether the logged-in user has already submitted a review for the given book ID",
+                "operationId": "isReviewed",
+                "parameters": [
+                    {
+                        "name": "bookId",
+                        "in": "path",
+                        "description": "ID of the book to check review status for",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Review status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "is_reviewed": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/settings/get-settings": {
             "get": {
                 "tags": [
@@ -3194,6 +4039,123 @@
                     }
                 ]
             }
+        },
+        "/api/user-dashboard/statistics": {
+            "get": {
+                "tags": [
+                    "User Dashboard"
+                ],
+                "summary": "Get borrow statistics for authenticated user",
+                "operationId": "abbab5a50f7bccd8629c6e770a001923",
+                "responses": {
+                    "200": {
+                        "description": "User borrow statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "statistics": {
+                                            "properties": {
+                                                "total_borrowed_books": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "total_returned_books": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "total_overdue_books": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user-dashboard/borrowed-books": {
+            "get": {
+                "tags": [
+                    "User Dashboard"
+                ],
+                "summary": "List borrowed books for authenticated user",
+                "operationId": "1f86ee279f0a828bc97ff97f7df64209",
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of borrowed books",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Borrow"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -3422,6 +4384,24 @@
                 },
                 "type": "object"
             },
+            "Category": {
+                "title": "Category",
+                "required": [
+                    "id",
+                    "category_name"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "category_name": {
+                        "type": "string",
+                        "example": "Books"
+                    }
+                },
+                "type": "object"
+            },
             "DonationRequest": {
                 "title": "DonationRequest",
                 "required": [
@@ -3430,7 +4410,8 @@
                     "book_title",
                     "status",
                     "number_of_copies",
-                    "contact_number"
+                    "bs_id",
+                    "sbu"
                 ],
                 "properties": {
                     "id": {
@@ -3445,10 +4426,6 @@
                         "type": "string",
                         "example": "Introduction to Algorithms"
                     },
-                    "author_name": {
-                        "type": "string",
-                        "example": "Thomas H. Cormen"
-                    },
                     "status": {
                         "type": "string",
                         "enum": [
@@ -3462,13 +4439,13 @@
                         "type": "integer",
                         "example": 2
                     },
-                    "location": {
+                    "bs_id": {
                         "type": "string",
-                        "example": "Dhaka Library Zone 3"
+                        "example": "BS123"
                     },
-                    "contact_number": {
+                    "sbu": {
                         "type": "string",
-                        "example": "+8801700000000"
+                        "example": "SBU456"
                     }
                 },
                 "type": "object"
@@ -3624,6 +4601,10 @@
             "description": "Dashboard"
         },
         {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
             "name": "Books",
             "description": "Books"
         },
@@ -3654,6 +4635,10 @@
         {
             "name": "Settings",
             "description": "Settings"
+        },
+        {
+            "name": "User Dashboard",
+            "description": "User Dashboard"
         }
     ]
 }

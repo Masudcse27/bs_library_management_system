@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
 use App\Models\Borrow;
+use App\Models\FeaturedBook;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -23,13 +24,12 @@ class BookController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"category_id", "name", "author", "total_copies", "available_copies"},
+     *                 required={"category_id", "name", "author", "total_copies"},
      *                 @OA\Property(property="category_id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="The Great Gatsby"),
      *                 @OA\Property(property="author", type="string", example="F. Scott Fitzgerald"),
      *                 @OA\Property(property="short_description", type="string", example="A novel set in the 1920s", nullable=true),
      *                 @OA\Property(property="total_copies", type="integer", example=10),
-     *                 @OA\Property(property="available_copies", type="integer", example=8),
      *                 @OA\Property(
      *                     property="book_cover",
      *                     type="file",
@@ -74,7 +74,7 @@ class BookController extends Controller
             'author' => 'required|string|max:255',
             'short_description' => 'nullable|string|max:1000',
             'total_copies' => 'required|integer|min:1',
-            'available_copies' => 'required|integer|min:0',
+            // 'available_copies' => 'required|integer|min:0',
             'book_cover' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:2048',
             'pdf_file' => 'nullable|file|mimes:pdf|max:20480', // 20MB
             'audio_file' => 'nullable|file|mimes:mp3,wav|max:20480', // 20MB
@@ -105,7 +105,7 @@ class BookController extends Controller
             'author' => $request->author,
             'short_description' => $request->short_description,
             'total_copies' => $request->total_copies,
-            'available_copies' => $request->available_copies,
+            'available_copies' => $request->total_copies,
             'book_cover' => $coverPath ?? null,
             'pdf_file' => $pdfPath ?? null,
             'audio_file' => $audioPath ?? null,
@@ -139,9 +139,9 @@ class BookController extends Controller
      *     @OA\Parameter(
      *         name="category",
      *         in="query",
-     *         description="Filter by category name",
+     *         description="Filter by category ID",
      *         required=false,
-     *         @OA\Schema(type="string")
+     *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Parameter(
      *         name="per_page",
@@ -149,6 +149,13 @@ class BookController extends Controller
      *         description="Number of results per page (pagination)",
      *         required=false,
      *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="non_featured",
+     *         in="query",
+     *         description="Return only books that are NOT featured. Pass 'true' to enable.",
+     *         required=false,
+     *         @OA\Schema(type="boolean", default=false)
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -182,21 +189,21 @@ class BookController extends Controller
         }
 
         if ($request->has('category')) {
-            $query->whereHas('category', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->query('category') . '%');
-            });
+            $query->where('category_id', $request->query('category'));
         }
 
-        if ($request->has('per_page')) {
-            $books = $query->paginate($request->query('per_page', 10));
-        } else {
-            $books = $query->get();
+        if ($request->has('non_featured')) {
+            $featuredBookIds = FeaturedBook::pluck('book_id')->toArray();
+            if (!empty($featuredBookIds)) {
+                $query->whereNotIn('id', $featuredBookIds);
+            }
         }
+        $books = $query->paginate($request->query('per_page', 9));
 
-        return response()->json([
-            'status' => 'success',
-            'data' => BookResource::collection($books),
-        ]);
+        return BookResource::collection($books)
+            ->additional(['status' => 'success'])
+            ->response()
+            ->setStatusCode(200);
     }
 
     /**
@@ -358,7 +365,6 @@ class BookController extends Controller
             'author' => 'required|string|max:255',
             'short_description' => 'nullable|string|max:1000',
             'total_copies' => 'required|integer|min:1',
-            'available_copies' => 'required|integer|min:0',
             'book_cover' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:2048',
             'pdf_file' => 'nullable|file|mimes:pdf|max:20480',
             'audio_file' => 'nullable|file|mimes:mp3,wav|max:20480',
@@ -370,13 +376,14 @@ class BookController extends Controller
                 'errors' => $validator->errors(),
             ], 400);
         }
+        $availableCopies = $request->available_copies + (abs($book->total_copies - $book->available_copies));
 
         $book->category_id = $request->category_id;
         $book->name = $request->name;
         $book->author = $request->author;
         $book->short_description = $request->short_description;
         $book->total_copies = $request->total_copies;
-        $book->available_copies = $request->available_copies;
+        $book->available_copies = $availableCopies;
 
         if ($request->hasFile('book_cover')) {
             $book->book_cover = $request->file('book_cover')->store('book_covers', 'public');
@@ -561,5 +568,130 @@ class BookController extends Controller
         }
         $available = $book->available_copies > 0;
         return response()->json(["is_available" => $available], 200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/book/recommended-books",
+     *     summary="Get top recommended books for the authenticated user",
+     *     description="Returns up to 10 books based on user's most-read categories, excluding already borrowed books. Falls back to top-rated unread books.",
+     *     tags={"Books"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Recommended books retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Recommended books"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Book")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function recommended_books(Request $request)
+    {
+        $user = $request->user();
+        $mostReadCategories = DB::table('borrows')
+            ->select('books.category_id', DB::raw('COUNT(*) as borrow_count'))
+            ->join('books', 'borrows.book_id', '=', 'books.id')
+            ->where('borrows.user_id', $user->id)
+            ->groupBy('books.category_id')
+            ->orderByDesc('borrow_count')
+            ->limit(5)
+            ->pluck('category_id');
+        $alreadyBorrowedBookIds = Borrow::where('user_id', $user->id)->pluck('book_id');
+
+        $recommendedBooks = Book::with('category')->whereIn('category_id', $mostReadCategories)
+            ->whereNotIn('id', $alreadyBorrowedBookIds)
+            ->orderByDesc('average_rating')
+            ->limit(10)
+            ->get();
+        if ($recommendedBooks->isEmpty()) {
+            $recommendedBooks = Book::with('category')
+                ->whereNotIn('id', $alreadyBorrowedBookIds)
+                ->orderByDesc('average_rating')
+                ->limit(10)
+                ->get();
+        }
+        return response()->json([
+            'message' => 'Recommended books',
+            'data' => BookResource::collection($recommendedBooks),
+        ], 200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/book/related-books/{id}",
+     *     summary="Get related books by category",
+     *     description="Returns up to 5 books related to the given book by category, excluding the book itself.",
+     *     tags={"Books"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the book to find related books for",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Related books retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Related books"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Book")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Book not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Book not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function relatedBooks(Request $request, $id)
+    {
+        $book = Book::find($id);
+        if (!$book) {
+            return response()->json(["message" => "Book not found"], 400);
+        }
+
+        $relatedBooks = Book::where('category_id', $book->category_id)
+            ->where('id', '!=', $id)
+            ->limit(5)
+            ->get();
+
+        return response()->json([
+            'message' => 'Related books',
+            'data' => BookResource::collection($relatedBooks),
+        ], 200);
+    }
+    public function downloadPdf($filename)
+    {
+        $path = storage_path("app/public/book/pdfs/{$filename}");
+
+        if (!file_exists($path)) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+
+        return response()->download($path, $filename, [
+            'Access-Control-Allow-Origin' => '*', // allow frontend access
+        ]);
     }
 }

@@ -85,16 +85,30 @@ class ReviewController extends Controller
             return response()->json(['message' => 'Book not found'], 404);
         }
 
+        $user_id = $request->user()->id;
+
+        // Check if user has already reviewed this book
+        $existingReview = Review::where('book_id', $book_id)
+            ->where('user_id', $user_id)
+            ->first();
+
+        if ($existingReview) {
+            return response()->json([
+                'message' => 'You have already reviewed this book.',
+                'review' => new ReviewResource($existingReview),
+            ], 409); // 409 Conflict
+        }
+
         $data = $validatedData->validated();
         $data['book_id'] = $book_id;
-        $data['user_id'] = $request->user()->id;
+        $data['user_id'] = $user_id;
 
         try {
             $review = DB::transaction(function () use ($book, $data) {
                 $total_ratings = $book->total_ratings + $data['rating'];
                 $rating_count = $book->rating_count + 1;
                 $average_rating = $total_ratings / $rating_count;
-                
+
                 $book->update([
                     'total_ratings' => $total_ratings,
                     'rating_count' => $rating_count,
@@ -113,7 +127,7 @@ class ReviewController extends Controller
         } catch (\Exception $e) {
             Log::error('Review creation failed', [
                 'error' => $e->getMessage(),
-                'user_id' => $request->user()->id,
+                'user_id' => $user_id,
                 'book_id' => $book_id,
             ]);
 
@@ -403,5 +417,110 @@ class ReviewController extends Controller
                 'message' => 'Failed to delete review. Please try again later.',
             ], 500);
         }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/review/rating-star-count/{bookId}",
+     *     summary="Get count of ratings grouped by star for a book",
+     *     description="Returns the count of reviews for each star rating (1 to 5) for the given book ID",
+     *     operationId="ratingStarCount",
+     *     tags={"Reviews"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="bookId",
+     *         in="path",
+     *         description="ID of the book to get rating counts for",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Rating counts by star",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="1", type="integer", example=3),
+     *             @OA\Property(property="2", type="integer", example=0),
+     *             @OA\Property(property="3", type="integer", example=1),
+     *             @OA\Property(property="4", type="integer", example=5),
+     *             @OA\Property(property="5", type="integer", example=12),
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=404,
+     *         description="Book not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Book not found")
+     *         )
+     *     )
+     * )
+     */
+    public function ratingStarCount($bookId)
+    {
+        $counts = Review::where('book_id', $bookId)
+            ->select('rating', \DB::raw('count(*) as count'))
+            ->groupBy('rating')
+            ->pluck('count', 'rating')
+            ->toArray();
+
+        // Fill missing ratings with 0
+        $result = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $result[$i] = $counts[$i] ?? 0;
+        }
+
+        return response()->json($result, 200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/review/is-reviewed/{bookId}",
+     *     summary="Check if the authenticated user has reviewed a book",
+     *     description="Returns whether the logged-in user has already submitted a review for the given book ID",
+     *     operationId="isReviewed",
+     *     tags={"Reviews"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="bookId",
+     *         in="path",
+     *         description="ID of the book to check review status for",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Review status",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="is_reviewed", type="boolean", example=true)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
+     */
+    public function is_reviewed(Request $request, $bookID)
+    {
+        $user_id = $request->user()->id;
+
+        // Check if user has already reviewed this book
+        $existingReview = Review::where('book_id', $bookID)
+            ->where('user_id', $user_id)
+            ->first();
+
+        return response()->json([
+            "is_reviewed" => $existingReview ? true : false
+        ], 200);
     }
 }

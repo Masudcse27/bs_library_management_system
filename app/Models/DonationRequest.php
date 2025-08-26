@@ -9,11 +9,10 @@ class DonationRequest extends Model
     protected $fillable = [
         'user_id',
         'book_title',
-        'author_name',
         'status',
         'number_of_copies',
-        'location',
-        'contact_number',
+        'bs_id',
+        'sbu',
     ];
 
     public function user()
