@@ -189,7 +189,8 @@ class BookController extends Controller
         }
 
         if ($request->has('category')) {
-            $query->where('category_id', $request->query('category'));
+            $categories = explode(',', $request->query('category')); // convert "1,3,5" to [1,3,5]
+            $query->whereIn('category_id', $categories);
         }
 
         if ($request->has('category_name')) {
