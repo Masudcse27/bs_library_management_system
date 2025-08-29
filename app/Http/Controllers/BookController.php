@@ -192,6 +192,13 @@ class BookController extends Controller
             $query->where('category_id', $request->query('category'));
         }
 
+        if ($request->has('category_name')) {
+            $categoryName = $request->query('category_name');
+            $query->whereHas('category', function ($q) use ($categoryName) {
+                $q->where('category_name', 'like', '%' . $categoryName . '%');
+            });
+        }
+
         if ($request->has('non_featured')) {
             $featuredBookIds = FeaturedBook::pluck('book_id')->toArray();
             if (!empty($featuredBookIds)) {
