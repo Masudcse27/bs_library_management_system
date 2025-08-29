@@ -113,7 +113,13 @@ class CategoryController extends Controller
     {
         $categories = Category::query();
 
-        if ($request->has("per_page")) {
+        // Apply category_name filter
+        if ($request->has('category_name')) {
+            $categories->where('category_name', 'like', '%' . $request->query('category_name') . '%');
+        }
+
+        // Paginate if per_page is provided, otherwise get all
+        if ($request->has('per_page')) {
             $categories = $categories->paginate($request->per_page);
         } else {
             $categories = $categories->get();
@@ -124,6 +130,7 @@ class CategoryController extends Controller
             ->response()
             ->setStatusCode(200);
     }
+
 
     /**
      * @OA\Put(
