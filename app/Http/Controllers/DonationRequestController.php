@@ -171,6 +171,20 @@ class DonationRequestController extends Controller
      *     operationId="collectedDonations",
      *     tags={"Donation Requests"},
      *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Number of items per page",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="bs_id",
+     *         in="query",
+     *         description="Filter donations by bs_id",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=3)
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="List of collected donation requests",
@@ -202,12 +216,23 @@ class DonationRequestController extends Controller
     {
         $user = $request->user();
         $perPage = $request->query('per_page', 10);
-        if ($user->role === 'admin') {
-            $donations = DonationRequest::with('user')->where('status', 'collected')->paginate($perPage);
 
-        } else {
-            $donations = DonationRequest::with('user')->where('user_id', $user->id)->where('status', 'collected')->paginate($perPage);
+        $query = DonationRequest::with('user');
+
+        // optional bs_id filter
+        if ($request->has('bs_id')) {
+            $query->where('bs_id', $request->query('bs_id'));
         }
+
+        // role-based restriction
+        if ($user->role === 'admin') {
+            $query->where('status', 'collected');
+        } else {
+            $query->where('user_id', $user->id)
+                ->where('status', 'collected');
+        }
+
+        $donations = $query->paginate($perPage);
 
         return DonationRequestResource::collection($donations)
             ->additional(['status' => 'success'])
