@@ -201,12 +201,12 @@ class DonationRequestController extends Controller
     public function collectedDonations(Request $request)
     {
         $user = $request->user();
-
+        $perPage = $request->query('per_page', 10);
         if ($user->role === 'admin') {
-            $donations = DonationRequest::with('user')->where('status', 'collected')->paginate(2);
+            $donations = DonationRequest::with('user')->where('status', 'collected')->paginate($perPage);
 
         } else {
-            $donations = DonationRequest::with('user')->where('user_id', $user->id)->where('status', 'collected')->paginate(2);
+            $donations = DonationRequest::with('user')->where('user_id', $user->id)->where('status', 'collected')->paginate($perPage);
         }
 
         return DonationRequestResource::collection($donations)
