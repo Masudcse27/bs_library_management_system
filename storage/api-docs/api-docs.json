@@ -61,28 +61,65 @@
                 "tags": [
                     "Dashboard"
                 ],
-                "summary": "Get number of borrows per day for the last 7 days",
+                "summary": "Get borrow, return, and overdue counts per day for the last 7 days",
                 "operationId": "781c02277d07c2ef88f4b8a5bdee196e",
                 "responses": {
                     "200": {
-                        "description": "Successful response with daily borrow counts",
+                        "description": "Successful response",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "day": {
-                                                "type": "string",
-                                                "example": "Monday"
-                                            },
-                                            "total": {
-                                                "type": "integer",
-                                                "example": 5
+                                    "properties": {
+                                        "borrowed": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "day": {
+                                                        "type": "string",
+                                                        "example": "Monday"
+                                                    },
+                                                    "total": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    }
+                                                },
+                                                "type": "object"
                                             }
                                         },
-                                        "type": "object"
-                                    }
+                                        "returned": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "day": {
+                                                        "type": "string",
+                                                        "example": "Monday"
+                                                    },
+                                                    "total": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "overdue": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "day": {
+                                                        "type": "string",
+                                                        "example": "Monday"
+                                                    },
+                                                    "total": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -2747,6 +2784,28 @@
                 "summary": "List collected donation requests",
                 "description": "Admins see all collected donation requests. Users see only their own collected requests.",
                 "operationId": "collectedDonations",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "bs_id",
+                        "in": "query",
+                        "description": "Filter donations by bs_id",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 3
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "List of collected donation requests",
