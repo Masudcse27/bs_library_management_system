@@ -189,7 +189,15 @@ class BookController extends Controller
         }
 
         if ($request->has('category')) {
-            $query->where('category_id', $request->query('category'));
+            $categories = explode(',', $request->query('category')); // convert "1,3,5" to [1,3,5]
+            $query->whereIn('category_id', $categories);
+        }
+
+        if ($request->has('category_name')) {
+            $categoryName = $request->query('category_name');
+            $query->whereHas('category', function ($q) use ($categoryName) {
+                $q->where('category_name', 'like', '%' . $categoryName . '%');
+            });
         }
 
         if ($request->has('non_featured')) {

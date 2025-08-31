@@ -59,18 +59,40 @@ class AdminDashboardController extends Controller
     /**
      * @OA\Get(
      *     path="/api/admin-dashboard/borrows-chart",
-     *     summary="Get number of borrows per day for the last 7 days",
+     *     summary="Get borrow, return, and overdue counts per day for the last 7 days",
      *     tags={"Dashboard"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
-     *         description="Successful response with daily borrow counts",
+     *         description="Successful response",
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 type="object",
-     *                 @OA\Property(property="day", type="string", example="Monday"),
-     *                 @OA\Property(property="total", type="integer", example=5)
+     *             type="object",
+     *             @OA\Property(
+     *                 property="borrowed",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="day", type="string", example="Monday"),
+     *                     @OA\Property(property="total", type="integer", example=5)
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="returned",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="day", type="string", example="Monday"),
+     *                     @OA\Property(property="total", type="integer", example=3)
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="overdue",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="day", type="string", example="Monday"),
+     *                     @OA\Property(property="total", type="integer", example=1)
+     *                 )
      *             )
      *         )
      *     ),
@@ -80,22 +102,64 @@ class AdminDashboardController extends Controller
      *     )
      * )
      */
+
     public function borrows_chart()
     {
         $borrowData = DB::table('borrows')
             ->select(DB::raw('DATE(borrowed_at) as date'), DB::raw('COUNT(*) as total'))
             ->where('borrowed_at', '>=', Carbon::now()->subDays(6)->startOfDay())
+            ->whereNotIn('status', ['pending', 'rejected'])
             ->groupBy(DB::raw('DATE(borrowed_at)'))
             ->pluck('total', 'date');
 
-        $result = collect();
+        $borrowed = collect();
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i)->toDateString();
-            $result->push([
+            $borrowed->push([
                 'day' => Carbon::parse($date)->format('l'),
                 'total' => $borrowData[$date] ?? 0,
             ]);
         }
+
+        $returnedData = DB::table('borrows')
+            ->select(DB::raw('DATE(returned_at) as date'), DB::raw('COUNT(*) as total'))
+            ->where('returned_at', '>=', Carbon::now()->subDays(6)->startOfDay())
+            ->where('status', 'returned')
+            ->groupBy(DB::raw('DATE(returned_at)'))
+            ->pluck('total', 'date');
+
+        $returned = collect();
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+            $returned->push([
+                'day' => Carbon::parse($date)->format('l'),
+                'total' => $returnedData[$date] ?? 0,
+            ]);
+        }
+
+        $borrows = DB::table('borrows')
+            ->whereNotIn('status', ['returned', 'rejected'])
+            ->pluck('return_date') // get only the return_date
+            ->map(fn($d) => Carbon::parse($d)->toDateString());
+
+        $overdue = collect();
+        $startDate = now()->subDays(6)->toDateString();
+        $dates = collect(range(6, 0))->map(fn($i) => now()->subDays($i)->toDateString());
+
+        foreach ($dates as $date) {
+            // Count all return_dates earlier than current date
+            $count = $borrows->filter(fn($d) => $d < $date)->count();
+
+            $overdue->push([
+                'day' => Carbon::parse($date)->format('l'),
+                'total' => $count,
+            ]);
+        }
+        $result = [
+            'borrowed' => $borrowed,
+            'returned' => $returned,
+            'overdue' => $overdue
+        ];
         return response()->json($result, 200);
     }
     /**

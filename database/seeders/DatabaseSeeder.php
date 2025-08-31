@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Settings;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,8 +14,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // Seed default settings if not exists
         if (!Settings::first()) {
             Settings::create([
                 'max_borrow_duration' => 30,
@@ -23,6 +22,27 @@ class DatabaseSeeder extends Seeder
                 'max_extension_limit' => 2,
                 'max_booking_duration' => 7,
                 'max_booking_limit' => 3,
+            ]);
+        }
+
+        // Seed default users if not exists
+        if (!User::where('email', 'admin@gmail.com')->exists()) {
+            User::create([
+                'name' => 'Admin User',
+                'email' => 'admin@gmail.com',
+                'username' => 'admin',
+                'role' => 'admin',
+                'password' => Hash::make('password'), // 🔑 Default password
+            ]);
+        }
+
+        if (!User::where('email', 'masud@gmail.com')->exists()) {
+            User::create([
+                'name' => 'Masud Bhuiya',
+                'email' => 'masud@gmail.com',
+                'username' => 'masud',
+                'role' => 'user',
+                'password' => Hash::make('password'), // 🔑 Default password
             ]);
         }
     }
