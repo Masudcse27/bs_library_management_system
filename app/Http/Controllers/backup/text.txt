@@ -1,0 +1,9 @@
+ /sc:task  now create a dac for this 20 table for with those column Field Name, Database Constraint → Data type, length, nullability, default values, foreign keys, unique, indexes, etc., Backend 
+Validation → Validation rules applied at the API/backend level, Frontend Validation → Validation rules applied at the UI level (e.g., required fields, regex, min/max length, input restrictions)., Business Rule → Any domain-specific rules or logic tied to this field (e.g., "email must be unique per user," "order status can only move forward," "discount cannot exceed 50%")., Discrepancies → Highlight mismatches or gaps 
+between database schema, backend, frontend, and business rules. not create a new file, append the result on this file. not remove anything from this file only append. file path is "C:\Users\wcrasadin\Desktop\Projects\wc-webcommander\claudedocs\DAC-custom_properties-department.md". please maintain the table number serial in this file also check 1st and 2nd table as a example for new report you given.
+
+ /sc:analyze now analysis this 20 table where use in this project frontend codebase
+
+ /sc:analyze --persona-backend now analysis this 20 table where use in this project backend codebase
+
+ /sc:analyze --persona-backend analyze this 20 database table in this project codebase.table name get from this file table number 79 to 98. file path is "C:\Users\wcrasadin\Desktop\Projects\wc-webcommander\claudedocs\FORMATTED-702-TABLE-VALIDATION-COMPARISON-FINAL.md".
